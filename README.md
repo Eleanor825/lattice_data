@@ -147,7 +147,7 @@ Legend:
 - `❌` = not clearly supported
 
 | Platform | Open | Sci/Mat | Compiler | Traceability | Pretrain | Continue | Fine-tune | Post-train | Local | Spark | Flink | Chat / DnD |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | **Lattice** | ✅ | ✅ | ✅ | ✅ | ◐ | ◐ | ◐ | ◐ | ✅ | ✅ | ◐ | ❌ |
 | NVIDIA NeMo Curator | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ◐ | ❌ | ❌ |
 | Databricks Mosaic AI | ❌ | ❌ | ◐ | ◐ | ✅ | ✅ | ✅ | ◐ | ❌ | ✅ | ❌ | ◐ |
