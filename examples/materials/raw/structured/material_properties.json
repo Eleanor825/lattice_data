@@ -1,0 +1,18 @@
+[
+  {
+    "entity": "LLZO",
+    "entity_type": "electrolyte",
+    "ionic_conductivity": "1e-3 S/cm",
+    "stability_window": "wide",
+    "processing_temperature": "1100 C",
+    "description": "LLZO is a garnet-type ceramic solid electrolyte with strong relevance to safe battery design."
+  },
+  {
+    "entity": "Li10GeP2S12",
+    "entity_type": "electrolyte",
+    "ionic_conductivity": "1e-2 S/cm",
+    "stability_window": "moderate",
+    "processing_temperature": "room temperature",
+    "description": "Li10GeP2S12 is a sulfide solid electrolyte with very high ionic conductivity and moisture sensitivity."
+  }
+]

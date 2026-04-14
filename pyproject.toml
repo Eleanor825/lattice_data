@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lattice-data-compiler"
+version = "0.1.0"
+description = "An open-source domain data compiler for turning heterogeneous sources into training-ready datasets."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+  {name = "Huan Zhang"}
+]
+dependencies = []
+
+[project.scripts]
+lattice = "lattice.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

@@ -1,0 +1,6 @@
+# Solid-State Batteries for High-Safety Energy Storage
+
+Solid-state batteries replace flammable liquid electrolytes with solid ionic conductors. This shift can improve safety, widen electrochemical stability windows, and enable the use of lithium metal anodes in practical devices.
+
+Recent studies show that sulfide and oxide electrolytes exhibit different tradeoffs in conductivity, interface stability, and manufacturability. High-quality datasets for materials models should preserve these distinctions together with synthesis conditions and measurement evidence.
+
