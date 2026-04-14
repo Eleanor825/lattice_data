@@ -41,7 +41,7 @@ def filter_records(records: list[Record]) -> tuple[list[Record], Counter[str]]:
         quality = compute_quality(record)
         record.quality = quality
         content_hash = str(quality["content_hash"])
-        if quality["word_count"] < 12:
+        if record.schema_type in {"Document", "InstructionTrace"} and quality["word_count"] < 12:
             dropped["too_short"] += 1
             continue
         if quality["has_boilerplate"]:
@@ -57,4 +57,3 @@ def filter_records(records: list[Record]) -> tuple[list[Record], Counter[str]]:
         record.metadata.dedup_id = content_hash
         kept.append(record)
     return kept, dropped
-

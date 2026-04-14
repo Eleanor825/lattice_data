@@ -53,7 +53,7 @@ def parse_arxiv_feed(xml_text: str, domain: str) -> list[dict[str, Any]]:
 
 
 def fetch_arxiv_documents(query: str, limit: int, domain: str) -> list[dict[str, Any]]:
-    url = f"https://export.arxiv.org/api/query?search_query={safe_query(f'all:\"{query}\"')}&start=0&max_results={limit}"
+    search_query = f'all:"{query}"'
+    url = f"https://export.arxiv.org/api/query?search_query={safe_query(search_query)}&start=0&max_results={limit}"
     xml_text = http_get_text(url)
     return parse_arxiv_feed(xml_text, domain)
-

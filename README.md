@@ -116,6 +116,10 @@ What is already in place:
   - JARVIS
   - Wikidata
 - Materials Project integration with API-key gating
+- engine execution layer for:
+  - local
+  - Spark
+  - Flink-compatible code path
 - tests and CI
 
 So today, Lattice is already functioning as the **data foundation layer** of the future platform, but it is not yet the full training platform described above.
@@ -158,6 +162,11 @@ So today, Lattice is already functioning as the **data foundation layer** of the
   - JARVIS
 - Extended the compiler so `KnowledgeRecord` sources can also flow into QA, instruction, and knowledge views.
 - Marked PatentsView as an optional connector while the legacy API remains discontinued during ODP migration.
+- Added a local execution layer that can compile normalized records with:
+  - local Python execution
+  - Spark local mode
+  - a Flink-compatible execution path with runtime checks
+- Verified local and Spark execution in the current environment.
 
 ## Repository Structure
 
@@ -187,4 +196,5 @@ Long-term priorities:
 ## Supporting Docs
 
 - [Storage Architecture](docs/storage_architecture.md)
+- [Engine Runtime Notes](docs/engines.md)
 - [Research Notes Index](docs/research/README.md)

@@ -1,4 +1,4 @@
-.PHONY: test compile-example demo fetch-p0 stats clean
+.PHONY: test compile-example demo fetch-p0 engine-check engine-local engine-spark engine-flink stats clean
 
 test:
 	PYTHONPATH=src python3 -m unittest discover -s tests -v
@@ -31,6 +31,33 @@ fetch-p0:
 		--element Li \
 		--element O \
 		--limit 2
+
+engine-check:
+	PYTHONPATH=src python3 -m lattice engine-check
+
+engine-local:
+	PYTHONPATH=src python3 -m lattice engine-compile \
+		--engine local \
+		--input examples/runtime/raw \
+		--output outputs/runtime-local \
+		--domain materials \
+		--dataset-name Lattice-Runtime-Local
+
+engine-spark:
+	PYTHONPATH=src python3 -m lattice engine-compile \
+		--engine spark \
+		--input examples/runtime/raw \
+		--output outputs/runtime-spark \
+		--domain materials \
+		--dataset-name Lattice-Runtime-Spark
+
+engine-flink:
+	PYTHONPATH=src python3 -m lattice engine-compile \
+		--engine flink \
+		--input examples/runtime/raw \
+		--output outputs/runtime-flink \
+		--domain materials \
+		--dataset-name Lattice-Runtime-Flink
 
 stats:
 	PYTHONPATH=src python3 -m lattice stats --path outputs/materials

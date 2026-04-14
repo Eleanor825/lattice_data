@@ -45,6 +45,32 @@ class Record:
         }
 
 
+def metadata_from_dict(payload: JsonDict) -> Metadata:
+    return Metadata(
+        source_id=str(payload.get("source_id", "")),
+        source_type=str(payload.get("source_type", "")),
+        url_or_ref=str(payload.get("url_or_ref", "")),
+        timestamp=str(payload.get("timestamp", "")),
+        license=str(payload.get("license", "unknown")),
+        domain=str(payload.get("domain", "")),
+        schema_type=str(payload.get("schema_type", "")),
+        dedup_id=str(payload.get("dedup_id", "")),
+        provenance_chain=list(payload.get("provenance_chain", [])),
+    )
+
+
+def record_from_dict(payload: JsonDict) -> Record:
+    metadata_payload = payload.get("metadata", {})
+    metadata = metadata_from_dict(metadata_payload)
+    return Record(
+        record_id=str(payload.get("record_id", "")),
+        schema_type=str(payload.get("schema_type", metadata.schema_type)),
+        metadata=metadata,
+        payload=dict(payload.get("payload", {})),
+        quality=dict(payload.get("quality", {})),
+    )
+
+
 def build_metadata(
     *,
     source_path: str | Path,

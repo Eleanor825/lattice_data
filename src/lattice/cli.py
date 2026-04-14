@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from lattice.compiler import CompilerConfig, compile_dataset
+from lattice.engines import EngineConfig, engine_check, run_engine_compile
 from lattice.sources import DemoFetchConfig, SourceFetchConfig, run_demo_fetch, run_source_fetch
 from lattice.utils import read_json
 
@@ -19,6 +20,20 @@ def _build_parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("--domain", required=True, help="Target domain label.")
     compile_parser.add_argument("--dataset-name", required=True, help="Dataset release name.")
     compile_parser.add_argument("--chunk-size", type=int, default=1200, help="Maximum characters per pretrain chunk.")
+
+    engine_compile_parser = subparsers.add_parser(
+        "engine-compile", help="Compile normalized JSONL records with local, Spark, or Flink."
+    )
+    engine_compile_parser.add_argument("--engine", required=True, choices=["local", "spark", "flink"])
+    engine_compile_parser.add_argument("--input", required=True, help="Input directory containing JSONL source records.")
+    engine_compile_parser.add_argument("--output", required=True, help="Output directory for compiled artifacts.")
+    engine_compile_parser.add_argument("--domain", required=True, help="Target domain label.")
+    engine_compile_parser.add_argument("--dataset-name", required=True, help="Dataset release name.")
+    engine_compile_parser.add_argument("--chunk-size", type=int, default=1200, help="Maximum characters per pretrain chunk.")
+
+    engine_check_parser = subparsers.add_parser(
+        "engine-check", help="Run local runtime checks for local, Spark, and Flink engines."
+    )
 
     fetch_parser = subparsers.add_parser("fetch-demo", help="Fetch a small real-source demo dataset.")
     fetch_parser.add_argument("--output", required=True, help="Directory for fetched raw source files.")
@@ -94,6 +109,26 @@ def _handle_compile(args: argparse.Namespace) -> int:
     )
     manifest = compile_dataset(config)
     print(json.dumps(manifest, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _handle_engine_compile(args: argparse.Namespace) -> int:
+    config = EngineConfig(
+        input_dir=args.input,
+        output_dir=args.output,
+        domain=args.domain,
+        dataset_name=args.dataset_name,
+        engine=args.engine,
+        chunk_size=args.chunk_size,
+    )
+    manifest = run_engine_compile(config)
+    print(json.dumps(manifest, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _handle_engine_check(_: argparse.Namespace) -> int:
+    payload = engine_check()
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -178,6 +213,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "compile":
         return _handle_compile(args)
+    if args.command == "engine-compile":
+        return _handle_engine_compile(args)
+    if args.command == "engine-check":
+        return _handle_engine_check(args)
     if args.command == "fetch-demo":
         return _handle_fetch_demo(args)
     if args.command == "fetch-sources":
