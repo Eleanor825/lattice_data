@@ -2,6 +2,20 @@
 
 Lattice is an open-source domain data compiler for turning heterogeneous scientific sources into training-ready dataset views.
 
+## Goal
+
+The immediate goal of Lattice is to build **Phase 1** of a materials/scientific data compiler:
+
+- connect heterogeneous real-world scientific sources
+- normalize them into a small stable schema family
+- preserve provenance, licensing, and dedup metadata
+- compile them into reusable dataset views for model training
+
+The longer-term goal is to turn this into a full data-centric research platform:
+
+- Phase 1: data ingestion, normalization, compilation, and release
+- Phase 2: data valuation, mixture selection, and feeding strategy optimization
+
 The current implementation targets **Phase 1** of the research plan:
 
 - ingest text, HTML, JSON, JSONL, and optional PDF sources
@@ -22,10 +36,55 @@ It now also includes a **real-source demo fetcher** that can pull a small public
 ## Project Layout
 
 - `src/lattice/`: Python package
+- `configs/`: source registry and fetch configuration
+- `docs/`: project docs, storage notes, and research notes
+- `docs/research/`: proposal, source survey, and planning documents
 - `examples/materials/raw/`: sample materials/science inputs
-- `docs/`: lightweight project docs
 - `tests/`: unit and end-to-end tests
-- `01_*.md`, `02_*.md`, `03_*.md`: project notes and proposal drafts
+
+## Repository Status
+
+The repository is currently organized around a compact but runnable Phase 1 baseline:
+
+- source fetchers for public demo sources and selected P0 materials sources
+- a schema boundary for normalized records
+- compilation into pretraining, QA, instruction, and knowledge views
+- reports for manifest, source coverage, and dataset cards
+- tests and CI
+
+## Updates
+
+### 2026-04-13
+
+- Initialized the repository as an independent open-source project.
+- Implemented the first runnable Phase 1 compiler:
+  - text / HTML / JSON / JSONL / optional PDF ingestion
+  - schema normalization
+  - provenance and dedup metadata
+  - quality filtering
+  - dataset view export
+- Added the first example materials dataset and end-to-end tests.
+- Added open-source scaffolding:
+  - MIT license
+  - contribution guide
+  - changelog
+  - CI workflow
+
+### 2026-04-14
+
+- Added a real-source demo fetcher for:
+  - OpenAlex
+  - arXiv
+  - PubChem
+- Added a starter source registry and a storage architecture document.
+- Added registry-driven P0 materials source adapters for:
+  - OQMD
+  - NOMAD
+  - Materials Project
+- Verified that:
+  - OQMD and NOMAD can be fetched into raw records
+  - those raw records can be compiled into Lattice views
+  - Materials Project gracefully skips when no API key is configured
 
 ## Minimal Schema Family
 
@@ -147,3 +206,12 @@ For serious use, keep real fetched data **outside the git-tracked repo**.
 - use a separate local data root or object store for raw and compiled datasets
 
 See [docs/storage_architecture.md](docs/storage_architecture.md) for the recommended layout.
+
+## Research Notes
+
+Project-side planning and research documents now live under [docs/research](docs/research/README.md):
+
+- [导师想法总结](docs/research/01_导师想法总结.md)
+- [Research Proposal](docs/research/02_research_proposal.md)
+- [第二方向与实施路线](docs/research/03_第二方向_实施路线与现有工作对比.md)
+- [Phase 1 数据来源调研](docs/research/04_phase1_真实数据来源全景调研.md)
