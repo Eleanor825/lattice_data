@@ -146,12 +146,10 @@ Phase 2 计划支持：
 - `✅` = 明确支持
 - `◐` = 部分支持
 - `❌` = 未明显支持
-- `🎯` = Lattice 的目标能力
 
 | 平台 | 开源 | 科学/材料垂域聚焦 | 多源数据编译 | provenance / license / dedup 作为核心 | 统一覆盖 pretraining + continued pretraining + fine-tuning + post-training 的平台叙事 | 本地执行 | Spark | Flink | 对话式 / 拖拽式 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **Lattice（当前）** | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ◐ | ❌ |
-| **Lattice（目标）** | ✅ | ✅ | ✅ | ✅ | 🎯 | 🎯 | 🎯 | 🎯 | 🎯 |
+| **Lattice** | ✅ | ✅ | ✅ | ✅ | ◐ | ✅ | ✅ | ◐ | ❌ |
 | NVIDIA NeMo Curator | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ◐ | ❌ | ❌ |
 | Databricks Mosaic AI | ❌ | ❌ | ◐ | ◐ | ✅ | ❌ | ✅ | ❌ | ◐ |
 | H2O LLM Studio / DataStudio | ❌ | ❌ | ◐ | ◐ | ◐ | ◐ | ❌ | ❌ | ✅ |

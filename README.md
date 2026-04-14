@@ -145,12 +145,10 @@ Legend:
 - `✅` = clearly supported
 - `◐` = partially supported
 - `❌` = not clearly supported
-- `🎯` = Lattice target capability
 
 | Platform | Open Source | Science / Materials Focus | Multi-source Data Compilation | Provenance / License / Dedup as Core | Unified Story Across Pretraining + Continued Pretraining + Fine-tuning + Post-training | Local Execution | Spark | Flink | Conversational / Drag-and-drop |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **Lattice (Current)** | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ◐ | ❌ |
-| **Lattice (Target)** | ✅ | ✅ | ✅ | ✅ | 🎯 | 🎯 | 🎯 | 🎯 | 🎯 |
+| **Lattice** | ✅ | ✅ | ✅ | ✅ | ◐ | ✅ | ✅ | ◐ | ❌ |
 | NVIDIA NeMo Curator | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ◐ | ❌ | ❌ |
 | Databricks Mosaic AI | ❌ | ❌ | ◐ | ◐ | ✅ | ❌ | ✅ | ❌ | ◐ |
 | H2O LLM Studio / DataStudio | ❌ | ❌ | ◐ | ◐ | ◐ | ◐ | ❌ | ❌ | ✅ |
