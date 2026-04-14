@@ -6,53 +6,50 @@
     <title>Lattice</title>
     <style>
       :root {
-        --bg: #f3eadf;
-        --bg-soft: #fbf7f1;
-        --paper: rgba(255, 252, 247, 0.84);
-        --line: rgba(21, 31, 45, 0.1);
-        --ink: #151f2d;
-        --muted: #5f6a76;
+        --bg: #f6f0e7;
+        --surface: rgba(255, 252, 247, 0.84);
+        --surface-strong: rgba(255, 255, 255, 0.92);
+        --ink: #142031;
+        --muted: #627080;
+        --line: rgba(20, 32, 49, 0.1);
         --teal: #0f766e;
-        --copper: #b45309;
+        --amber: #c06612;
         --blue: #1d4ed8;
-        --berry: #8f1239;
-        --shadow: 0 30px 80px rgba(21, 31, 45, 0.12);
+        --rose: #a61b4d;
+        --shadow: 0 30px 80px rgba(20, 32, 49, 0.12);
       }
 
       * {
         box-sizing: border-box;
       }
 
-      html {
-        scroll-behavior: smooth;
-      }
-
       body {
         margin: 0;
         color: var(--ink);
         background:
-          radial-gradient(circle at 8% 0%, rgba(15, 118, 110, 0.16), transparent 30%),
-          radial-gradient(circle at 90% 12%, rgba(180, 83, 9, 0.16), transparent 24%),
-          radial-gradient(circle at 45% 100%, rgba(29, 78, 216, 0.09), transparent 28%),
-          linear-gradient(180deg, #fffdf9 0%, var(--bg) 100%);
+          radial-gradient(circle at 12% 0%, rgba(15, 118, 110, 0.18), transparent 28%),
+          radial-gradient(circle at 92% 12%, rgba(192, 102, 18, 0.16), transparent 22%),
+          radial-gradient(circle at 55% 100%, rgba(29, 78, 216, 0.08), transparent 24%),
+          linear-gradient(180deg, #fffdf8 0%, var(--bg) 100%);
         font-family: "Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif;
       }
 
       a {
         color: inherit;
+        text-decoration: none;
       }
 
       .shell {
         width: min(1220px, calc(100vw - 32px));
         margin: 0 auto;
-        padding: 22px 0 56px;
+        padding: 20px 0 56px;
       }
 
       .topbar {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        gap: 16px;
+        justify-content: space-between;
+        gap: 18px;
         margin-bottom: 18px;
       }
 
@@ -71,26 +68,22 @@
       }
 
       .nav-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
         padding: 10px 14px;
         border-radius: 999px;
-        background: rgba(21, 31, 45, 0.06);
-        text-decoration: none;
+        background: rgba(20, 32, 49, 0.06);
         font-size: 13px;
         font-weight: 700;
       }
 
       .hero {
         display: grid;
-        grid-template-columns: 1.2fr 0.95fr;
-        gap: 24px;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 22px;
         align-items: stretch;
       }
 
       .panel {
-        background: var(--paper);
+        background: var(--surface);
         border: 1px solid var(--line);
         border-radius: 32px;
         box-shadow: var(--shadow);
@@ -104,14 +97,13 @@
       .eyebrow {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
         padding: 8px 14px;
         border-radius: 999px;
         background: rgba(15, 118, 110, 0.1);
         color: var(--teal);
         font-size: 12px;
         font-weight: 800;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
       }
 
@@ -120,29 +112,45 @@
       }
 
       h1 {
-        margin: 20px 0 18px;
-        font-size: clamp(46px, 7vw, 90px);
-        line-height: 0.92;
-        letter-spacing: -0.05em;
+        margin: 18px 0 16px;
+        font-size: clamp(52px, 7vw, 96px);
+        line-height: 0.9;
+        letter-spacing: -0.06em;
       }
 
-      .hero-copy p {
+      .lead {
         margin: 0;
-        max-width: 58ch;
+        max-width: 44ch;
         color: var(--muted);
         font-size: 18px;
-        line-height: 1.76;
+        line-height: 1.7;
       }
 
-      .hero-copy p + p {
-        margin-top: 14px;
+      .lead strong {
+        color: var(--ink);
+      }
+
+      .hero-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .tag {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(20, 32, 49, 0.06);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
       }
 
       .actions {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        margin-top: 24px;
+        margin-top: 22px;
       }
 
       .button {
@@ -151,9 +159,8 @@
         gap: 10px;
         padding: 13px 18px;
         border-radius: 18px;
-        text-decoration: none;
         font-weight: 800;
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        transition: transform 0.18s ease;
       }
 
       .button:hover {
@@ -163,51 +170,100 @@
       .button.primary {
         background: var(--ink);
         color: #fff;
-        box-shadow: 0 16px 36px rgba(21, 31, 45, 0.18);
       }
 
       .button.secondary {
-        background: rgba(21, 31, 45, 0.06);
+        background: rgba(20, 32, 49, 0.06);
         color: var(--ink);
       }
 
-      .hero-side {
-        display: grid;
-        gap: 16px;
-        padding: 26px;
+      .product {
+        padding: 24px;
       }
 
-      .metric {
-        padding: 18px;
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid rgba(21, 31, 45, 0.08);
+      .window {
+        overflow: hidden;
+        border-radius: 26px;
+        border: 1px solid rgba(20, 32, 49, 0.08);
+        background: var(--surface-strong);
       }
 
-      .metric-label {
+      .window-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        border-bottom: 1px solid rgba(20, 32, 49, 0.08);
+      }
+
+      .dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(20, 32, 49, 0.18);
+      }
+
+      .window-title {
         color: var(--muted);
         font-size: 12px;
+        font-weight: 800;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        font-weight: 800;
       }
 
-      .metric-value {
-        margin-top: 10px;
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: -0.04em;
+      .product-body {
+        display: grid;
+        grid-template-columns: 0.9fr 0.95fr 0.9fr;
+        gap: 16px;
+        padding: 18px;
       }
 
-      .metric-note {
-        margin-top: 8px;
-        color: var(--muted);
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .stack h3 {
+        margin: 4px 0 2px;
         font-size: 14px;
-        line-height: 1.65;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
       }
+
+      .node {
+        padding: 14px 14px 13px;
+        border-radius: 18px;
+        background: rgba(20, 32, 49, 0.05);
+        border: 1px solid rgba(20, 32, 49, 0.07);
+      }
+
+      .node strong {
+        display: block;
+        font-size: 17px;
+        letter-spacing: -0.03em;
+      }
+
+      .node span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .node.teal { border-color: rgba(15, 118, 110, 0.18); background: rgba(15, 118, 110, 0.07); }
+      .node.blue { border-color: rgba(29, 78, 216, 0.18); background: rgba(29, 78, 216, 0.07); }
+      .node.amber { border-color: rgba(192, 102, 18, 0.18); background: rgba(192, 102, 18, 0.07); }
+      .node.rose { border-color: rgba(166, 27, 77, 0.18); background: rgba(166, 27, 77, 0.07); }
 
       .section {
-        margin-top: 30px;
+        margin-top: 28px;
       }
 
       .section-header {
@@ -222,42 +278,7 @@
 
       .section-subtitle {
         margin: 8px 0 0;
-        max-width: 70ch;
-        color: var(--muted);
-        line-height: 1.72;
-      }
-
-      .flow {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 14px;
-      }
-
-      .flow-step {
-        padding: 20px;
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.72);
-        border: 1px solid rgba(21, 31, 45, 0.08);
-      }
-
-      .flow-step strong {
-        display: block;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .flow-step span {
-        display: block;
-        margin-top: 12px;
-        font-size: 24px;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-      }
-
-      .flow-step p {
-        margin: 12px 0 0;
+        max-width: 64ch;
         color: var(--muted);
         line-height: 1.72;
       }
@@ -268,20 +289,13 @@
         gap: 18px;
       }
 
-      .grid-3 {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-      }
-
       .card {
         padding: 24px;
       }
 
-      .card-badge {
+      .badge {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
         padding: 7px 12px;
         border-radius: 999px;
         font-size: 12px;
@@ -290,10 +304,10 @@
         text-transform: uppercase;
       }
 
-      .card-badge.teal { background: rgba(15, 118, 110, 0.1); color: var(--teal); }
-      .card-badge.copper { background: rgba(180, 83, 9, 0.12); color: var(--copper); }
-      .card-badge.blue { background: rgba(29, 78, 216, 0.1); color: var(--blue); }
-      .card-badge.berry { background: rgba(143, 18, 57, 0.1); color: var(--berry); }
+      .badge.teal { background: rgba(15, 118, 110, 0.1); color: var(--teal); }
+      .badge.copper { background: rgba(192, 102, 18, 0.12); color: var(--copper); }
+      .badge.blue { background: rgba(29, 78, 216, 0.1); color: var(--blue); }
+      .badge.rose { background: rgba(166, 27, 77, 0.1); color: var(--rose); }
 
       .card h3 {
         margin: 14px 0 10px;
@@ -307,41 +321,46 @@
         line-height: 1.72;
       }
 
-      .bullet-list {
-        margin: 16px 0 0;
-        padding-left: 18px;
-        color: var(--muted);
-        line-height: 1.8;
-      }
-
       .feature-grid {
         display: grid;
-        grid-template-columns: 0.95fr 1.05fr;
+        grid-template-columns: 1fr 1fr;
         gap: 18px;
       }
 
-      .split-list {
+      .mini-metrics {
         display: grid;
-        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
       }
 
-      .split-item {
-        padding: 18px;
-        border-radius: 22px;
+      .mini {
+        padding: 16px 18px;
+        border-radius: 20px;
         background: rgba(255, 255, 255, 0.72);
-        border: 1px solid rgba(21, 31, 45, 0.08);
+        border: 1px solid rgba(20, 32, 49, 0.08);
       }
 
-      .split-item strong {
-        display: block;
-        font-size: 14px;
-        letter-spacing: 0.02em;
-      }
-
-      .split-item p {
-        margin: 8px 0 0;
+      .mini-label {
         color: var(--muted);
-        line-height: 1.7;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .mini strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+      }
+
+      .mini span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
       }
 
       .demo-banner {
@@ -354,7 +373,7 @@
 
       .demo-banner h3 {
         margin: 0 0 10px;
-        font-size: 30px;
+        font-size: 32px;
         letter-spacing: -0.03em;
       }
 
@@ -365,8 +384,8 @@
       }
 
       .roadmap {
-        padding: 0;
         overflow: hidden;
+        padding: 0;
       }
 
       .roadmap img {
@@ -375,37 +394,40 @@
         height: auto;
       }
 
-      @media (max-width: 1050px) {
+      @media (max-width: 1080px) {
         .hero,
-        .flow,
         .grid-4,
-        .grid-3,
         .feature-grid,
-        .demo-banner {
+        .demo-banner,
+        .product-body {
           grid-template-columns: 1fr;
         }
       }
 
-      @media (max-width: 640px) {
+      @media (max-width: 680px) {
         .shell {
           width: min(100vw - 18px, 1220px);
-          padding: 14px 0 42px;
+          padding: 14px 0 40px;
         }
 
         .hero-copy,
-        .hero-side,
+        .product,
         .card,
         .demo-banner {
           padding: 22px;
         }
 
         h1 {
-          font-size: clamp(34px, 10vw, 64px);
+          font-size: clamp(34px, 10vw, 66px);
         }
 
         .topbar {
           flex-direction: column;
           align-items: flex-start;
+        }
+
+        .mini-metrics {
+          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -426,202 +448,197 @@
       <section class="hero">
         <div class="panel hero-copy">
           <div class="eyebrow">Data-Centric Model Platform</div>
-          <h1>Build model training like assembling blocks.</h1>
-          <p>
-            Lattice is designed as a platform that can automatically collect and process high-quality
-            training data from many different sources, then connect that data to the full large-model
-            lifecycle.
+          <h1>Train and optimize models without wiring everything by hand.</h1>
+          <p class="lead">
+            Lattice is a platform for <strong>collecting</strong>, <strong>processing</strong>, and
+            <strong>using</strong> high-quality training data across the full large-model lifecycle.
           </p>
-          <p>
-            It is meant to support pretraining from scratch, continued pretraining on top of existing models,
-            task-specific fine-tuning, and post-training for safety and alignment.
-          </p>
-          <p>
-            The end goal is not another expert-only training stack. The end goal is a system where users can
-            build, train, and optimize model workflows through conversation, drag-and-drop composition, and
-            reusable pipeline blocks, without having to hand-write complex code for every step.
-          </p>
+          <div class="hero-tags">
+            <span class="tag">Pretraining</span>
+            <span class="tag">Continued pretraining</span>
+            <span class="tag">Fine-tuning</span>
+            <span class="tag">Post-training</span>
+            <span class="tag">Chat</span>
+            <span class="tag">Drag-drop</span>
+          </div>
           <div class="actions">
-            <a class="button primary" href="docs/demo-showcase.html">Open Current Demo</a>
-            <a class="button secondary" href="README.md">Read the README</a>
-            <a class="button secondary" href="docs/source-catalog.md">Explore Source Catalog</a>
+            <a class="button primary" href="docs/demo-showcase.html">Open current demo</a>
+            <a class="button secondary" href="README.md">Read the docs</a>
           </div>
         </div>
 
-        <div class="panel hero-side">
-          <div class="metric">
-            <div class="metric-label">Core Promise</div>
-            <div class="metric-value">Data → Training</div>
-            <div class="metric-note">Move from fragmented raw sources to executable training and optimization workflows.</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Lifecycle Scope</div>
-            <div class="metric-value">4 Modes</div>
-            <div class="metric-note">Pretrain, continue, fine-tune, and post-train all belong inside the same platform.</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">User Experience</div>
-            <div class="metric-value">Chat + Drag-drop</div>
-            <div class="metric-note">Users should compose workflows like blocks instead of writing everything manually.</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Execution</div>
-            <div class="metric-value">Local First</div>
-            <div class="metric-note">Develop and validate locally, then scale the same pipeline across execution engines.</div>
+        <div class="panel product">
+          <div class="window">
+            <div class="window-top">
+              <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+              <div class="window-title">Lattice Workflow</div>
+            </div>
+            <div class="product-body">
+              <div class="stack">
+                <h3>Sources</h3>
+                <div class="node teal">
+                  <strong>Papers</strong>
+                  <span>OpenAlex, Crossref, arXiv</span>
+                </div>
+                <div class="node blue">
+                  <strong>Databases</strong>
+                  <span>OQMD, NOMAD, JARVIS, PubChem</span>
+                </div>
+                <div class="node rose">
+                  <strong>Knowledge</strong>
+                  <span>Wikidata, patents, domain repositories</span>
+                </div>
+              </div>
+              <div class="stack">
+                <h3>Platform Core</h3>
+                <div class="node amber">
+                  <strong>Collect</strong>
+                  <span>registry, adapters, ingestion</span>
+                </div>
+                <div class="node amber">
+                  <strong>Compile</strong>
+                  <span>schema, provenance, filtering, views</span>
+                </div>
+                <div class="node amber">
+                  <strong>Operate</strong>
+                  <span>chat, drag-drop, reusable blocks</span>
+                </div>
+              </div>
+              <div class="stack">
+                <h3>Training Modes</h3>
+                <div class="node teal">
+                  <strong>Pretrain</strong>
+                  <span>train from scratch</span>
+                </div>
+                <div class="node blue">
+                  <strong>Continue</strong>
+                  <span>domain continued pretraining</span>
+                </div>
+                <div class="node rose">
+                  <strong>Fine-tune + Post-train</strong>
+                  <span>task optimization, safety, alignment</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <section class="section">
         <div class="section-header">
-          <h2 class="section-title">What the platform actually does</h2>
+          <h2 class="section-title">One platform, four training stages</h2>
           <p class="section-subtitle">
-            Lattice is not only a data scraper, and not only a fine-tuning dashboard. It is intended to connect
-            raw sources, training data, model workflows, and low-code interaction into one system.
-          </p>
-        </div>
-        <div class="flow">
-          <div class="flow-step">
-            <strong>Collect</strong>
-            <span>Sources</span>
-            <p>Ingest papers, databases, repositories, knowledge graphs, patents, and domain resources.</p>
-          </div>
-          <div class="flow-step">
-            <strong>Process</strong>
-            <span>Data Engine</span>
-            <p>Clean, deduplicate, structure, score, and track provenance and licensing.</p>
-          </div>
-          <div class="flow-step">
-            <strong>Compile</strong>
-            <span>Views</span>
-            <p>Produce pretraining, QA, instruction, and knowledge views from a shared data foundation.</p>
-          </div>
-          <div class="flow-step">
-            <strong>Train</strong>
-            <span>Lifecycle</span>
-            <p>Send data into pretraining, continued pretraining, fine-tuning, and post-training workflows.</p>
-          </div>
-          <div class="flow-step">
-            <strong>Operate</strong>
-            <span>Interface</span>
-            <p>Control the workflow through conversation, drag-and-drop, and reusable building blocks.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-header">
-          <h2 class="section-title">Four model stages, one platform</h2>
-          <p class="section-subtitle">
-            These training and optimization paths should not live in separate tools with separate data stories.
+            The product should not stop at data curation. It should let users move from data to model improvement in one system.
           </p>
         </div>
         <div class="grid-4">
           <article class="panel card">
-            <span class="card-badge teal">Pretraining</span>
-            <h3>Train from scratch</h3>
-            <p>Build and manage corpora, structured records, and training views for from-scratch model training.</p>
+            <span class="badge teal">Pretrain</span>
+            <h3>From scratch</h3>
+            <p>Build high-quality corpora and structured records for fresh model training.</p>
           </article>
           <article class="panel card">
-            <span class="card-badge copper">Continued pretraining</span>
+            <span class="badge copper">Continue</span>
             <h3>Adapt existing models</h3>
-            <p>Use domain-specific data to continue training a foundation model on new scientific knowledge.</p>
+            <p>Continue training a base model on new scientific or domain-specific data.</p>
           </article>
           <article class="panel card">
-            <span class="card-badge blue">Fine-tuning</span>
+            <span class="badge blue">Fine-tune</span>
             <h3>Optimize for tasks</h3>
-            <p>Turn compiled views into task-ready supervision for QA, instruction-following, and domain behaviors.</p>
+            <p>Turn compiled views into QA, instruction, and task-specific supervision.</p>
           </article>
           <article class="panel card">
-            <span class="card-badge berry">Post-training</span>
-            <h3>Improve safety and alignment</h3>
-            <p>Bring alignment, preference, and post-training optimization into the same workflow graph.</p>
+            <span class="badge berry">Post-train</span>
+            <h3>Align and safeguard</h3>
+            <p>Bring safety, alignment, and preference optimization into the same platform story.</p>
           </article>
         </div>
       </section>
 
       <section class="section">
         <div class="section-header">
-          <h2 class="section-title">A low-friction operating layer</h2>
+          <h2 class="section-title">The product surface</h2>
           <p class="section-subtitle">
-            The platform should feel like assembling blocks, not debugging a tangle of one-off scripts.
+            The intended experience is block-based and low-friction, not expert-only infrastructure.
           </p>
         </div>
-        <div class="grid-3">
+        <div class="grid-4">
           <article class="panel card">
-            <span class="card-badge teal">Chat</span>
+            <span class="badge teal">Chat</span>
             <h3>Describe the workflow</h3>
-            <p>Users should be able to describe the desired data or training flow in natural language.</p>
-            <ul class="bullet-list">
-              <li>Describe sources</li>
-              <li>Describe target task</li>
-              <li>Describe optimization intent</li>
-            </ul>
+            <p>Use natural language to specify sources, tasks, and model goals.</p>
           </article>
           <article class="panel card">
-            <span class="card-badge copper">Drag &amp; Drop</span>
+            <span class="badge copper">Drag-drop</span>
             <h3>Compose visually</h3>
-            <p>Users should be able to snap together source blocks, data transforms, and training stages.</p>
-            <ul class="bullet-list">
-              <li>Sources</li>
-              <li>Filters</li>
-              <li>Views</li>
-              <li>Training blocks</li>
-            </ul>
+            <p>Snap source, filter, compile, and training stages into one executable flow.</p>
           </article>
           <article class="panel card">
-            <span class="card-badge blue">Reusable blocks</span>
+            <span class="badge blue">Reusable blocks</span>
             <h3>Reuse instead of rewiring</h3>
-            <p>Complex pipelines should become named, reusable modules instead of bespoke code every time.</p>
-            <ul class="bullet-list">
-              <li>Data recipes</li>
-              <li>Training templates</li>
-              <li>Repeatable workflows</li>
-            </ul>
+            <p>Turn complex pipelines into reusable modules that can be shared and repeated.</p>
+          </article>
+          <article class="panel card">
+            <span class="badge berry">Local first</span>
+            <h3>Run before you scale</h3>
+            <p>Develop locally, validate the chain, then expand across execution engines.</p>
           </article>
         </div>
       </section>
 
       <section class="section">
         <div class="section-header">
-          <h2 class="section-title">Current proof that the platform is executable</h2>
+          <h2 class="section-title">What is already working today</h2>
           <p class="section-subtitle">
-            Lattice is already more than a concept slide. The repository contains runnable demos that prove the
-            data foundation layer is executable today.
+            Lattice already has executable proof points in the repository today.
           </p>
         </div>
         <div class="feature-grid">
           <div class="panel card">
-            <span class="card-badge teal">Current demo</span>
+            <span class="badge teal">Current demo</span>
             <h3>Real-source compilation</h3>
             <p>
-              A public-source batch from OpenAlex, arXiv, and PubChem is fetched, normalized, and compiled into
-              multiple training-ready views.
+              A public-source batch is fetched from OpenAlex, arXiv, and PubChem and compiled into reusable training views.
             </p>
-            <ul class="bullet-list">
-              <li>4 raw records → 4 kept records</li>
-              <li>Pretrain, QA, instruction, and knowledge outputs</li>
-              <li>Manifest-backed and reproducible</li>
-            </ul>
           </div>
-          <div class="split-list">
-            <div class="panel split-item">
-              <strong>Local runtime</strong>
-              <p>The normalized runtime fixture already executes through local Python.</p>
+          <div class="mini-metrics">
+            <div class="mini">
+              <div class="mini-label">Source demo</div>
+              <strong>4 → 4</strong>
+              <span>4 raw records compiled into 4 kept records.</span>
             </div>
-            <div class="panel split-item">
-              <strong>Spark runtime</strong>
-              <p>The same fixture already executes through Spark local mode.</p>
+            <div class="mini">
+              <div class="mini-label">Runtime demo</div>
+              <strong>4 → 3</strong>
+              <span>Local and Spark runs both keep 3 records after filtering one boilerplate item.</span>
             </div>
-            <div class="panel split-item">
-              <strong>Flink runtime</strong>
-              <p>A compatible code path exists, but the current local PyFlink runtime still needs environment cleanup.</p>
+            <div class="mini">
+              <div class="mini-label">Execution</div>
+              <strong>Local + Spark</strong>
+              <span>Both are verified in the current repository.</span>
             </div>
-            <div class="panel split-item">
-              <strong>Demo access</strong>
-              <p><a href="docs/demo-showcase.html">Open the live demo showcase</a> to inspect the current executable artifacts.</p>
+            <div class="mini">
+              <div class="mini-label">Next step</div>
+              <strong>Flink</strong>
+              <span>Code path exists; local runtime still needs environment cleanup.</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="panel demo-banner">
+          <div>
+            <h3>See the current proof, not just the promise</h3>
+            <p>
+              Open the demo showcase to inspect executable artifacts, manifests, and runtime results already generated in the repository.
+            </p>
+          </div>
+          <a class="button primary" href="docs/demo-showcase.html">Open Demo Showcase</a>
         </div>
       </section>
 
@@ -629,7 +646,7 @@
         <div class="section-header">
           <h2 class="section-title">Roadmap</h2>
           <p class="section-subtitle">
-            Phase 1 builds the data foundation. Phase 2 connects that foundation to model training and optimization workflows.
+            Phase 1 builds the data foundation. Phase 2 turns that foundation into a full training and optimization product layer.
           </p>
         </div>
         <div class="panel roadmap">
