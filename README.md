@@ -93,6 +93,12 @@ What is already in place:
   - OQMD
   - NOMAD
   - Materials Project with API-key gating
+  - OpenAlex
+  - Crossref
+  - arXiv
+  - PubChem
+  - Wikidata
+  - JARVIS
 - tests and CI
 
 ## Repository Structure
@@ -133,6 +139,15 @@ What is already in place:
   - Materials Project skips safely when no API key is configured
 - Reorganized the repository structure and moved planning documents into `docs/research/`.
 - Added the Phase 1 / Phase 2 roadmap figure.
+
+### 2026-04-15
+
+- Extended open-source source coverage with:
+  - Crossref
+  - Wikidata
+  - JARVIS
+- Extended the compiler so `KnowledgeRecord` sources can also flow into QA, instruction, and knowledge views.
+- Marked PatentsView as an optional connector while the legacy API remains discontinued during ODP migration.
 
 ## Roadmap
 

@@ -138,6 +138,51 @@ def structured_to_instruction(record: Record, dataset_name: str) -> list[dict[st
     ]
 
 
+def knowledge_to_knowledge(record: Record, dataset_name: str) -> list[dict[str, Any]]:
+    return [
+        {
+            "view_id": f"kg-{stable_hash(record.record_id)}",
+            "view_type": "knowledge",
+            "subject": record.payload.get("subject", ""),
+            "predicate": record.payload.get("predicate", ""),
+            "object": record.payload.get("object", ""),
+            "evidence": record.payload.get("evidence", ""),
+            **_shared_view_metadata(record, dataset_name),
+        }
+    ]
+
+
+def knowledge_to_qa(record: Record, dataset_name: str) -> list[dict[str, Any]]:
+    subject = record.payload.get("subject", "")
+    predicate = record.payload.get("predicate", "").replace("_", " ")
+    return [
+        {
+            "view_id": f"qa-{stable_hash(record.record_id)}",
+            "view_type": "qa",
+            "question": f"What is the {predicate} of {subject}?",
+            "answer": record.payload.get("object", ""),
+            **_shared_view_metadata(record, dataset_name),
+        }
+    ]
+
+
+def knowledge_to_instruction(record: Record, dataset_name: str) -> list[dict[str, Any]]:
+    subject = record.payload.get("subject", "")
+    predicate = record.payload.get("predicate", "").replace("_", " ")
+    obj = record.payload.get("object", "")
+    return [
+        {
+            "view_id": f"ins-{stable_hash(record.record_id)}",
+            "view_type": "instruction",
+            "instruction": f"Summarize the known {predicate} information for {subject}.",
+            "input": subject,
+            "output": obj,
+            "tool_trace": [],
+            **_shared_view_metadata(record, dataset_name),
+        }
+    ]
+
+
 def build_views(records: list[Record], dataset_name: str, chunk_size: int = 1200) -> dict[str, list[dict[str, Any]]]:
     views = {
         "pretrain_view": [],
@@ -155,5 +200,8 @@ def build_views(records: list[Record], dataset_name: str, chunk_size: int = 1200
             views["qa_view"].extend(structured_to_qa(record, dataset_name))
             views["instruction_view"].extend(structured_to_instruction(record, dataset_name))
             views["knowledge_view"].extend(structured_to_knowledge(record, dataset_name))
+        elif record.schema_type == "KnowledgeRecord":
+            views["qa_view"].extend(knowledge_to_qa(record, dataset_name))
+            views["instruction_view"].extend(knowledge_to_instruction(record, dataset_name))
+            views["knowledge_view"].extend(knowledge_to_knowledge(record, dataset_name))
     return views
-

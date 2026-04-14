@@ -13,6 +13,16 @@
       "recommended_storage_tier": "raw/api/openalex"
     },
     {
+      "name": "crossref",
+      "category": "scholarly_metadata",
+      "priority": "P0",
+      "official_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+      "access_mode": "REST API",
+      "schema_targets": ["Document"],
+      "license_status": "open metadata with source-level content differences",
+      "recommended_storage_tier": "raw/api/crossref"
+    },
+    {
       "name": "arxiv",
       "category": "preprint_text",
       "priority": "P0",
@@ -64,6 +74,16 @@
       "recommended_storage_tier": "raw/api/jarvis"
     },
     {
+      "name": "wikidata",
+      "category": "open_knowledge_graph",
+      "priority": "P0",
+      "official_url": "https://www.wikidata.org/w/api.php",
+      "access_mode": "MediaWiki API",
+      "schema_targets": ["KnowledgeRecord"],
+      "license_status": "CC0",
+      "recommended_storage_tier": "raw/api/wikidata"
+    },
+    {
       "name": "pubchem",
       "category": "chemical_properties",
       "priority": "P0",
@@ -78,10 +98,20 @@
       "category": "patents",
       "priority": "P0",
       "official_url": "https://www.uspto.gov/ip-policy/economic-research/patentsview",
-      "access_mode": "API / downloads",
+      "access_mode": "legacy API discontinued; ODP migration in progress",
       "schema_targets": ["Document", "StructuredRecord"],
       "license_status": "official access terms",
       "recommended_storage_tier": "raw/api/patentsview"
+    },
+    {
+      "name": "cod",
+      "category": "crystal_structures",
+      "priority": "P1",
+      "official_url": "https://crystallography.net/cod/",
+      "access_mode": "search / dumps",
+      "schema_targets": ["StructuredRecord"],
+      "license_status": "CC0 / public domain",
+      "recommended_storage_tier": "raw/api/cod"
     }
   ]
 }
