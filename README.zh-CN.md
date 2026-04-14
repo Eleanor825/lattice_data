@@ -1,11 +1,11 @@
-<p align="right">
+<div align="right">
   <a href="./README.md">
     <img alt="English" src="https://img.shields.io/badge/English-2563eb?style=for-the-badge">
   </a>
   <a href="./README.zh-CN.md">
     <img alt="中文" src="https://img.shields.io/badge/中文-111827?style=for-the-badge">
   </a>
-</p>
+</div>
 
 # Lattice
 
