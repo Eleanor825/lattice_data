@@ -1,26 +1,78 @@
-flowchart LR
-    G["Overall Goal<br/>Build a data-centric platform for large-model training and optimization in science and materials"]
-
-    subgraph P1["Phase 1: Data Foundation"]
-        S1["Source Registry<br/>OpenAlex / Crossref / arXiv / OQMD / NOMAD / MP / JARVIS / PubChem / Wikidata"]
-        S2["Ingestion<br/>API fetch / dumps / web / files"]
-        S3["Normalization<br/>Document / StructuredRecord / KnowledgeRecord / InstructionTrace"]
-        S4["Data Quality<br/>provenance / license / dedup / filtering"]
-        S5["Compiled Views<br/>pretraining / QA / instruction / knowledge"]
-        S6["Release Layer<br/>manifests / dataset cards / reproducible outputs"]
-        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Inter, Segoe UI, Arial, sans-serif",
+    "primaryColor": "#F8FAFC",
+    "primaryTextColor": "#0F172A",
+    "primaryBorderColor": "#94A3B8",
+    "lineColor": "#334155",
+    "secondaryColor": "#EEF2FF",
+    "tertiaryColor": "#ECFCCB",
+    "clusterBkg": "#FFFFFF",
+    "clusterBorder": "#CBD5E1"
+  }
+}}%%
+flowchart TB
+    subgraph SRC["Data Sources"]
+        S1["Scholarly Sources<br/>OpenAlex · Crossref · arXiv · Europe PMC"]
+        S2["Materials Sources<br/>Materials Project · OQMD · NOMAD · JARVIS · Materials Cloud"]
+        S3["Chemistry and Knowledge<br/>PubChem · Wikidata · NIST · ORD · Catalysis data"]
     end
 
-    subgraph P2["Phase 2: Training and Optimization Layer"]
-        T0["Workflow Interface<br/>chat / drag-and-drop / reusable blocks"]
-        T1["Value Modeling<br/>quality / novelty / affinity / coverage / utility"]
-        T2["Data Planning<br/>proxy experiments / mixture selection / schedule design"]
-        T3["Training Workflows<br/>pretraining / continued pretraining / fine-tuning / post-training"]
-        T4["Optimized Models<br/>task-specific and aligned outputs"]
-        T0 --> T1 --> T2 --> T3 --> T4
+    subgraph P1["Phase 1 · Data Foundation"]
+        P11["Source Registry and Connectors<br/>source catalog · auth gating · fetch adapters"]
+        P12["Ingestion Layer<br/>API fetch · dumps · web pages · files"]
+        P13["Schema Normalization<br/>Document · StructuredRecord · KnowledgeRecord · InstructionTrace"]
+        P14["Quality and Traceability<br/>provenance · license · dedup · filtering · lineage"]
+        P15["Compiled Views<br/>pretrain · qa · instruction · knowledge"]
+        P16["Release Artifacts<br/>manifest · dataset card · workflow spec"]
+        P11 --> P12 --> P13 --> P14 --> P15 --> P16
     end
 
-    G --> P1
-    P1 --> P2
-    S5 -. feeds .-> T1
-    S6 -. manifests and release metadata .-> T2
+    subgraph CTRL["Platform Control Plane"]
+        C1["Registry and API<br/>runs · datasets · backends · rerun"]
+        C2["Workflow Runtime<br/>save spec · replay spec · migrate engines"]
+        C3["Product Surface<br/>CLI today · chat and drag-and-drop next"]
+        C1 --- C2 --- C3
+    end
+
+    subgraph P2["Phase 2 · Training and Optimization"]
+        P21["Engine-Portable Preparation<br/>pandas · Spark · Flink"]
+        P22["Training Workflows<br/>pretrain · continue · finetune · posttrain"]
+        P23["Model Backends<br/>local tiny · Hugging Face open models · external closed connectors"]
+        P24["Run Outputs<br/>checkpoints · metrics · manifests"]
+        P21 --> P22 --> P24
+        P23 --> P22
+    end
+
+    subgraph OUT["Deliverables"]
+        O1["Reusable Data Assets"]
+        O2["Improved Models"]
+        O3["Traceable Reproduction"]
+    end
+
+    S1 --> P12
+    S2 --> P12
+    S3 --> P12
+
+    P16 --> O1
+    P15 --> P21
+    P16 -. release metadata .-> C1
+    C2 -. replay or migrate .-> P21
+    C1 -. submit and track .-> P22
+    C3 -. operator control .-> C1
+    P24 --> O2
+    P16 --> O3
+    P24 --> O3
+
+    classDef source fill:#FFF7ED,stroke:#EA580C,color:#7C2D12,stroke-width:1.5px;
+    classDef phase1 fill:#EFF6FF,stroke:#2563EB,color:#1E3A8A,stroke-width:1.5px;
+    classDef control fill:#F5F3FF,stroke:#7C3AED,color:#4C1D95,stroke-width:1.5px;
+    classDef phase2 fill:#ECFDF5,stroke:#059669,color:#065F46,stroke-width:1.5px;
+    classDef out fill:#F8FAFC,stroke:#475569,color:#0F172A,stroke-width:1.5px;
+
+    class S1,S2,S3 source;
+    class P11,P12,P13,P14,P15,P16 phase1;
+    class C1,C2,C3 control;
+    class P21,P22,P23,P24 phase2;
+    class O1,O2,O3 out;
