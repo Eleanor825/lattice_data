@@ -7,8 +7,10 @@ from typing import Any
 from lattice.sources.arxiv import fetch_arxiv_documents
 from lattice.sources.common import ensure_dir, timestamp_now, write_source_jsonl, write_source_manifest
 from lattice.sources.crossref import fetch_crossref_documents
+from lattice.sources.europe_pmc import fetch_europe_pmc_documents
 from lattice.sources.jarvis import fetch_jarvis_structures
 from lattice.sources.materials_project import fetch_materials_project_materials
+from lattice.sources.materials_cloud_archive import fetch_materials_cloud_records
 from lattice.sources.nomad import fetch_nomad_materials
 from lattice.sources.openalex import fetch_openalex_documents
 from lattice.sources.oqmd import fetch_oqmd_structures
@@ -87,6 +89,10 @@ def run_source_fetch(config: SourceFetchConfig) -> dict[str, Any]:
                 rows = fetch_wikidata_knowledge(config.compounds or [config.query], config.limit, config.domain)
             elif source_name == "jarvis":
                 rows = fetch_jarvis_structures(config.elements, config.limit, config.domain)
+            elif source_name == "europe_pmc":
+                rows = fetch_europe_pmc_documents(config.query, config.limit, config.domain)
+            elif source_name == "materials_cloud_archive":
+                rows = fetch_materials_cloud_records(config.query, config.limit, config.domain)
             elif source_name == "pubchem":
                 rows, source_warnings = fetch_pubchem_compounds(config.compounds, config.domain)
                 warnings.extend(source_warnings)
@@ -102,7 +108,6 @@ def run_source_fetch(config: SourceFetchConfig) -> dict[str, Any]:
                 warnings.extend(source_warnings)
             elif source_name in {
                 "aflow",
-                "materials_cloud_archive",
                 "mdf",
                 "nist_materials_data_repository",
                 "ncchemistry_webbook",
@@ -111,7 +116,6 @@ def run_source_fetch(config: SourceFetchConfig) -> dict[str, Any]:
                 "catalysis_hub",
                 "battery_archive",
                 "core",
-                "europe_pmc",
                 "wikipedia_dumps",
                 "chem_libretexts",
                 "mit_ocw",

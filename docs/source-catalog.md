@@ -16,7 +16,7 @@ This table summarizes the current open-source source coverage and how each sourc
 | AFLOW | Structured materials DB | REST / AFLUX | P1 | Connector-ready | large-scale materials properties | `StructuredRecord` |
 | JARVIS | Materials repository | OPTIMADE / tools | P0 | Implemented | materials structure and property records | `StructuredRecord`, `Document` |
 | COD | Crystal structure database | search / dumps | P1 | Connector-ready | crystal structure coverage | `StructuredRecord` |
-| Materials Cloud Archive | Materials repository | archive / metadata | P1 | Connector-ready | archive records and bundles | `StructuredRecord`, `Document` |
+| Materials Cloud Archive | Materials repository | archive / metadata | P1 | Implemented | archive records and bundles | `StructuredRecord`, `Document` |
 | MDF | Materials repository | discover / publish | P1 | Connector-ready | curated materials datasets | `StructuredRecord` |
 | NIST Materials Data Repository | Materials repository | repository portal | P1 | Connector-ready | open materials datasets | `StructuredRecord` |
 | NIST Chemistry WebBook | Chemistry database | web resource | P0 | Connector-ready | physical and chemical properties | `StructuredRecord`, `KnowledgeRecord` |
@@ -31,7 +31,7 @@ This table summarizes the current open-source source coverage and how each sourc
 | MIT OCW | Open education | course site | P1 | Connector-ready | course notes and assignments | `Document` |
 | NPTEL | Open education | course site | P1 | Connector-ready | engineering course content | `Document` |
 | CORE | OA aggregator | API | P1 | Connector-ready | aggregated open-access papers | `Document` |
-| Europe PMC | OA aggregator | REST API | P1 | Connector-ready | publications and open-access metadata | `Document`, `KnowledgeRecord` |
+| Europe PMC | OA aggregator | REST API | P1 | Implemented | publications and open-access metadata | `Document`, `KnowledgeRecord` |
 | PatentsView | Patents | ODP migration | P0 optional | Optional / migration blocked | patent metadata and technical prior art | `Document`, `StructuredRecord` |
 | PATENTSCOPE | Patents | search / api-related access | P1 | Connector-ready | global patent documents | `Document` |
 | EPO OPS | Patents | OPS automation path | P1 | Connector-ready | patent search and metadata | `Document` |
