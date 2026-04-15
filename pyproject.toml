@@ -18,6 +18,7 @@ dependencies = []
 spark = ["pyspark==3.5.5"]
 flink = ["apache-flink==1.20.3"]
 engines = ["pyspark==3.5.5", "apache-flink==1.20.3"]
+training = ["torch>=2.5,<3"]
 
 [project.scripts]
 lattice = "lattice.cli:main"

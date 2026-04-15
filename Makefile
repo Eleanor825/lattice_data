@@ -1,4 +1,4 @@
-.PHONY: test compile-example demo fetch-p0 phase1-release engine-check engine-local engine-spark engine-flink stats clean
+.PHONY: test compile-example demo fetch-p0 phase1-release engine-check engine-local engine-spark engine-flink train-pretrain train-continue train-finetune train-post stats clean
 
 test:
 	PYTHONPATH=src python3 -m unittest discover -s tests -v
@@ -69,6 +69,33 @@ engine-flink:
 		--output outputs/runtime-flink \
 		--domain materials \
 		--dataset-name Lattice-Runtime-Flink
+
+train-pretrain:
+	PYTHONPATH=src python3 -m lattice train-pretrain \
+		--input examples/training/demo_dataset \
+		--output training-runs/pretrain-demo \
+		--run-name pretrain-demo
+
+train-continue:
+	PYTHONPATH=src python3 -m lattice train-continue \
+		--input examples/training/demo_dataset \
+		--output training-runs/continue-demo \
+		--run-name continue-demo \
+		--checkpoint-dir training-runs/pretrain-demo
+
+train-finetune:
+	PYTHONPATH=src python3 -m lattice train-finetune \
+		--input examples/training/demo_dataset \
+		--output training-runs/finetune-demo \
+		--run-name finetune-demo \
+		--checkpoint-dir training-runs/continue-demo
+
+train-post:
+	PYTHONPATH=src python3 -m lattice train-post \
+		--input examples/training/demo_dataset \
+		--output training-runs/post-demo \
+		--run-name post-demo \
+		--checkpoint-dir training-runs/finetune-demo
 
 stats:
 	PYTHONPATH=src python3 -m lattice stats --path outputs/materials

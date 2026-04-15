@@ -146,10 +146,10 @@ So today, Lattice is already functioning as the **data foundation layer** of the
 | Local execution | ✅ Implemented |
 | Spark execution | ✅ Implemented |
 | Flink execution | ✅ Implemented |
-| Pretraining workflow | ◐ Platform target, not fully implemented yet |
-| Continued pretraining workflow | ◐ Platform target, not fully implemented yet |
-| Fine-tuning workflow | ◐ Platform target, not fully implemented yet |
-| Post-training workflow | ◐ Platform target, not fully implemented yet |
+| Pretraining workflow | ✅ Implemented |
+| Continued pretraining workflow | ✅ Implemented |
+| Fine-tuning workflow | ✅ Implemented |
+| Post-training workflow | ✅ Implemented |
 | Conversational workflow | ◐ Platform target, not fully implemented yet |
 | Drag-and-drop workflow | ◐ Platform target, not fully implemented yet |
 
@@ -347,6 +347,7 @@ Long-term priorities:
 
 - [Storage Architecture](docs/storage_architecture.md)
 - [Engine Runtime Notes](docs/engines.md)
+- [Training Workflows](docs/training.md)
 - [Demo Summary](docs/demo.md)
 - [Demo Showcase](docs/demo-showcase.html)
 - [Source Catalog](docs/source-catalog.md)

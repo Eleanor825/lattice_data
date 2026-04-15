@@ -147,10 +147,10 @@ Phase 2 计划支持：
 | 本地执行 | ✅ 已实现 |
 | Spark 执行 | ✅ 已实现 |
 | Flink 执行 | ✅ 已实现 |
-| Pretraining 工作流 | ◐ 平台目标，尚未完整实现 |
-| Continued pretraining 工作流 | ◐ 平台目标，尚未完整实现 |
-| Fine-tuning 工作流 | ◐ 平台目标，尚未完整实现 |
-| Post-training 工作流 | ◐ 平台目标，尚未完整实现 |
+| Pretraining 工作流 | ✅ 已实现 |
+| Continued pretraining 工作流 | ✅ 已实现 |
+| Fine-tuning 工作流 | ✅ 已实现 |
+| Post-training 工作流 | ✅ 已实现 |
 | 对话式工作流 | ◐ 平台目标，尚未完整实现 |
 | 拖拽式工作流 | ◐ 平台目标，尚未完整实现 |
 
@@ -352,6 +352,7 @@ Lattice 想做、而大多数现有平台没有完整组合在一起的能力包
 
 - [Storage Architecture](docs/storage_architecture.md)
 - [Engine Runtime Notes](docs/engines.md)
+- [Training Workflows](docs/training.md)
 - [Demo Summary](docs/demo.md)
 - [Demo Showcase](docs/demo-showcase.html)
 - [Source Catalog](docs/source-catalog.md)

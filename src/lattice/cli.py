@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import json
 from pathlib import Path
 
 from lattice.compiler import CompilerConfig, compile_dataset
 from lattice.engines import EngineConfig, engine_check, run_engine_compile
 from lattice.sources import DemoFetchConfig, SourceFetchConfig, run_demo_fetch, run_source_fetch
+from lattice.training import TrainingConfig, run_training_workflow
 from lattice.utils import read_json
 from lattice.workflows import Phase1Config, run_phase1_pipeline
 
@@ -136,6 +138,18 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Also include optional sources when selecting from the registry automatically.",
     )
 
+    for workflow_name in ("train-pretrain", "train-continue", "train-finetune", "train-post"):
+        train_parser = subparsers.add_parser(workflow_name, help=f"Run the {workflow_name.replace('train-', '')} workflow.")
+        train_parser.add_argument("--input", required=True, help="Input compiled dataset directory.")
+        train_parser.add_argument("--output", required=True, help="Output training run directory.")
+        train_parser.add_argument("--run-name", required=True, help="Training run name.")
+        train_parser.add_argument("--checkpoint-dir", default="", help="Optional checkpoint directory for continue/fine-tune/post-train.")
+        train_parser.add_argument("--epochs", type=int, default=1, help="Number of training epochs.")
+        train_parser.add_argument("--batch-size", type=int, default=2, help="Training batch size.")
+        train_parser.add_argument("--learning-rate", type=float, default=3e-4, help="Learning rate.")
+        train_parser.add_argument("--max-length", type=int, default=192, help="Maximum sequence length.")
+        train_parser.add_argument("--hidden-size", type=int, default=96, help="Hidden size for the tiny local model.")
+
     stats_parser = subparsers.add_parser("stats", help="Print summary stats from a compiled output.")
     stats_parser.add_argument("--path", required=True, help="Compiled output directory or manifest path.")
     return parser
@@ -234,6 +248,25 @@ def _handle_phase1_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _handle_training_workflow(args: argparse.Namespace, workflow: str) -> int:
+    result = run_training_workflow(
+        TrainingConfig(
+            workflow=workflow,
+            input_dir=args.input,
+            output_dir=args.output,
+            run_name=args.run_name,
+            checkpoint_dir=args.checkpoint_dir,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            max_length=args.max_length,
+            hidden_size=args.hidden_size,
+        )
+    )
+    print(json.dumps(asdict(result), indent=2, ensure_ascii=False))
+    return 0
+
+
 def _handle_demo(args: argparse.Namespace) -> int:
     fetch_config = DemoFetchConfig(
         output_dir=args.raw_output,
@@ -283,6 +316,14 @@ def main(argv: list[str] | None = None) -> int:
         return _handle_fetch_sources(args)
     if args.command == "phase1-run":
         return _handle_phase1_run(args)
+    if args.command == "train-pretrain":
+        return _handle_training_workflow(args, "pretrain")
+    if args.command == "train-continue":
+        return _handle_training_workflow(args, "continue")
+    if args.command == "train-finetune":
+        return _handle_training_workflow(args, "finetune")
+    if args.command == "train-post":
+        return _handle_training_workflow(args, "posttrain")
     if args.command == "demo":
         return _handle_demo(args)
     if args.command == "stats":
