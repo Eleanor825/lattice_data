@@ -51,10 +51,12 @@ class Phase1WorkflowTest(unittest.TestCase):
             self.assertEqual(payload["release_name"], "phase1-test")
             self.assertTrue(Path(payload["paths"]["raw"]).exists())
             self.assertTrue(Path(payload["paths"]["bronze"]).exists())
+            self.assertTrue(Path(payload["paths"]["silver"]).exists())
             self.assertTrue(Path(payload["paths"]["gold"]).exists())
             self.assertTrue(Path(payload["paths"]["manifests"]).exists())
             self.assertIn("fetch", payload)
             self.assertIn("bronze", payload)
+            self.assertIn("silver", payload)
             self.assertIn("gold", payload)
             self.assertGreaterEqual(payload["fetch"]["counts"]["pubchem"], 1)
 

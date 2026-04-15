@@ -57,31 +57,37 @@ def run_source_fetch(config: SourceFetchConfig) -> dict[str, Any]:
             warnings.append(f"Unknown source in registry: {source_name}")
             continue
         rows: list[dict[str, Any]] = []
-        if source_name == "openalex":
-            rows = fetch_openalex_documents(config.query, config.limit, config.domain)
-        elif source_name == "crossref":
-            rows = fetch_crossref_documents(config.query, config.limit, config.domain)
-        elif source_name == "arxiv":
-            rows = fetch_arxiv_documents(config.query, config.limit, config.domain)
-        elif source_name == "wikidata":
-            rows = fetch_wikidata_knowledge(config.compounds or [config.query], config.limit, config.domain)
-        elif source_name == "jarvis":
-            rows = fetch_jarvis_structures(config.elements, config.limit, config.domain)
-        elif source_name == "pubchem":
-            rows, source_warnings = fetch_pubchem_compounds(config.compounds, config.domain)
-            warnings.extend(source_warnings)
-        elif source_name == "oqmd":
-            rows = fetch_oqmd_structures(config.elements, config.limit, config.domain)
-        elif source_name == "nomad":
-            rows = fetch_nomad_materials(config.elements, config.limit, config.domain)
-        elif source_name == "materials_project":
-            rows, source_warnings = fetch_materials_project_materials(config.elements, config.limit, config.domain)
-            warnings.extend(source_warnings)
-        elif source_name == "patentsview":
-            rows, source_warnings = fetch_patentsview_placeholder()
-            warnings.extend(source_warnings)
-        else:
-            warnings.append(f"Source fetcher not implemented yet: {source_name}")
+        try:
+            if source_name == "openalex":
+                rows = fetch_openalex_documents(config.query, config.limit, config.domain)
+            elif source_name == "crossref":
+                rows = fetch_crossref_documents(config.query, config.limit, config.domain)
+            elif source_name == "arxiv":
+                rows = fetch_arxiv_documents(config.query, config.limit, config.domain)
+            elif source_name == "wikidata":
+                rows = fetch_wikidata_knowledge(config.compounds or [config.query], config.limit, config.domain)
+            elif source_name == "jarvis":
+                rows = fetch_jarvis_structures(config.elements, config.limit, config.domain)
+            elif source_name == "pubchem":
+                rows, source_warnings = fetch_pubchem_compounds(config.compounds, config.domain)
+                warnings.extend(source_warnings)
+            elif source_name == "oqmd":
+                rows = fetch_oqmd_structures(config.elements, config.limit, config.domain)
+            elif source_name == "nomad":
+                rows = fetch_nomad_materials(config.elements, config.limit, config.domain)
+            elif source_name == "materials_project":
+                rows, source_warnings = fetch_materials_project_materials(config.elements, config.limit, config.domain)
+                warnings.extend(source_warnings)
+            elif source_name == "patentsview":
+                rows, source_warnings = fetch_patentsview_placeholder()
+                warnings.extend(source_warnings)
+            else:
+                warnings.append(f"Source fetcher not implemented yet: {source_name}")
+                continue
+        except Exception as exc:
+            warnings.append(f"{source_name} fetch failed: {exc}")
+            counts[source_name] = 0
+            write_source_jsonl(output_dir, source_name, [])
             continue
 
         write_source_jsonl(output_dir, source_name, rows)

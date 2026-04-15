@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from lattice.compiler import CompilerConfig, compile_dataset
+from lattice.silver import SilverLinkConfig, build_silver_layer
 from lattice.sources.common import timestamp_now
 from lattice.sources.fetchers import SourceFetchConfig, implemented_sources, run_source_fetch
 from lattice.utils import ensure_dir, slugify, write_json
@@ -32,6 +33,7 @@ def _release_paths(config: Phase1Config) -> dict[str, Path]:
         "root": root,
         "raw": root / "raw" / "api" / f"date={date_str}" / f"run={release_id}",
         "bronze": root / "bronze" / f"release={release_id}",
+        "silver": root / "silver" / f"release={release_id}",
         "gold": root / "gold" / f"release={release_id}",
         "manifests": root / "manifests" / f"release={release_id}",
     }
@@ -68,6 +70,15 @@ def run_phase1_pipeline(config: Phase1Config) -> dict[str, Any]:
         )
     )
 
+    silver_manifest = build_silver_layer(
+        SilverLinkConfig(
+            bronze_dir=str(paths["bronze"]),
+            output_dir=str(paths["silver"]),
+            domain=config.domain,
+            release_name=config.release_name,
+        )
+    )
+
     gold_manifest = compile_dataset(
         CompilerConfig(
             input_dir=str(paths["raw"]),
@@ -87,6 +98,7 @@ def run_phase1_pipeline(config: Phase1Config) -> dict[str, Any]:
         "config": asdict(config),
         "fetch": fetch_manifest,
         "bronze": bronze_manifest,
+        "silver": silver_manifest,
         "gold": gold_manifest,
     }
     write_json(paths["manifests"] / "phase1_manifest.json", phase1_manifest)
