@@ -19,7 +19,9 @@ Lattice is an open-source platform for collecting, structuring, and using high-q
 
 It focuses on one concrete problem first: turning fragmented scientific sources into provenance-aware, training-ready datasets that can be consumed by pretraining, continued pretraining, fine-tuning, and post-training workflows.
 
-![Lattice roadmap](figures/phase1-phase2-roadmap.png)
+<p>
+  <img src="./figures/phase1-phase2-roadmap.svg" alt="Lattice system architecture" width="100%">
+</p>
 
 ## What Lattice Does
 

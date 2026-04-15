@@ -19,7 +19,9 @@ Lattice 是一个面向科学与材料领域的大模型数据与训练平台。
 
 它覆盖的数据与训练链路包括 pretraining、continued pretraining、fine-tuning 和 post-training，但仓库当前的重点仍然是把这条基础链路真正跑通并做扎实。
 
-![Lattice roadmap](figures/phase1-phase2-roadmap.png)
+<p>
+  <img src="./figures/phase1-phase2-roadmap.svg" alt="Lattice system architecture" width="100%">
+</p>
 
 ## Lattice 在做什么
 
