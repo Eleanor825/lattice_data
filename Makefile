@@ -1,4 +1,4 @@
-.PHONY: test compile-example demo fetch-p0 phase1-release engine-check engine-local engine-spark engine-flink train-pretrain train-continue train-finetune train-post stats clean
+.PHONY: test compile-example demo fetch-p0 phase1-release engine-check engine-local engine-pandas engine-spark engine-flink train-pretrain train-continue train-finetune train-post phase2-open phase2-closed stats clean
 
 test:
 	PYTHONPATH=src python3 -m unittest discover -s tests -v
@@ -54,6 +54,14 @@ engine-local:
 		--domain materials \
 		--dataset-name Lattice-Runtime-Local
 
+engine-pandas:
+	PYTHONPATH=src python3 -m lattice engine-compile \
+		--engine pandas \
+		--input examples/runtime/raw \
+		--output outputs/runtime-pandas \
+		--domain materials \
+		--dataset-name Lattice-Runtime-Pandas
+
 engine-spark:
 	PYTHONPATH=src python3 -m lattice engine-compile \
 		--engine spark \
@@ -96,6 +104,30 @@ train-post:
 		--output training-runs/post-demo \
 		--run-name post-demo \
 		--checkpoint-dir training-runs/finetune-demo
+
+phase2-open:
+	PYTHONPATH=src python3 -m lattice phase2-run \
+		--workflow finetune \
+		--engine pandas \
+		--input examples/training/demo_dataset \
+		--output training-runs/phase2-open \
+		--run-name phase2-open \
+		--model-backend local_tiny \
+		--model-name tiny-local \
+		--compiled-input
+
+phase2-closed:
+	PYTHONPATH=src python3 -m lattice phase2-run \
+		--workflow posttrain \
+		--engine pandas \
+		--input examples/training/demo_dataset \
+		--output training-runs/phase2-closed \
+		--run-name phase2-closed \
+		--model-backend external_connector \
+		--model-name closed-provider-model \
+		--provider openai_compatible \
+		--model-family closed \
+		--compiled-input
 
 stats:
 	PYTHONPATH=src python3 -m lattice stats --path outputs/materials
