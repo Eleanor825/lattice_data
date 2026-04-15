@@ -187,6 +187,10 @@ def _build_parser() -> argparse.ArgumentParser:
     registry_parser.add_argument("--phase", required=True, choices=["phase1", "phase2"])
     registry_parser.add_argument("--manifest", required=True, help="Manifest JSON path.")
 
+    registry_list_parser = subparsers.add_parser("registry-list", help="List runs, datasets, or backends from the platform registry.")
+    registry_list_parser.add_argument("--db", required=True, help="SQLite registry DB path.")
+    registry_list_parser.add_argument("--kind", required=True, choices=["runs", "datasets", "backends"])
+
     serve_parser = subparsers.add_parser("serve-platform", help="Serve the platform registry API with FastAPI.")
     serve_parser.add_argument("--db", required=True, help="SQLite registry DB path.")
     serve_parser.add_argument("--host", default="127.0.0.1")
@@ -345,6 +349,23 @@ def _handle_registry_sync(args: argparse.Namespace) -> int:
     return 0
 
 
+def _handle_registry_list(args: argparse.Namespace) -> int:
+    from lattice.platform.registry import PlatformRegistry
+
+    registry = PlatformRegistry(args.db)
+    try:
+        if args.kind == "runs":
+            payload = registry.list_runs()
+        elif args.kind == "datasets":
+            payload = registry.list_datasets()
+        else:
+            payload = registry.list_backends()
+    finally:
+        registry.close()
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _handle_serve_platform(args: argparse.Namespace) -> int:
     import uvicorn
 
@@ -414,6 +435,8 @@ def main(argv: list[str] | None = None) -> int:
         return _handle_phase2_run(args)
     if args.command == "registry-sync":
         return _handle_registry_sync(args)
+    if args.command == "registry-list":
+        return _handle_registry_list(args)
     if args.command == "serve-platform":
         return _handle_serve_platform(args)
     if args.command == "demo":

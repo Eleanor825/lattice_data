@@ -13,7 +13,7 @@ class PlatformRegistry:
     def __init__(self, db_path: str | Path) -> None:
         self.db_path = Path(db_path)
         ensure_dir(self.db_path.parent)
-        self.conn = sqlite3.connect(self.db_path)
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self._init_schema()
 
@@ -162,6 +162,18 @@ class PlatformRegistry:
             (status, json.dumps(current_payload, ensure_ascii=False), run_id),
         )
         self.conn.commit()
+
+    def get_run(self, run_id: str) -> dict[str, Any] | None:
+        row = self.conn.execute("SELECT * FROM runs WHERE run_id = ?", (run_id,)).fetchone()
+        return dict(row) if row else None
+
+    def get_dataset(self, dataset_id: str) -> dict[str, Any] | None:
+        row = self.conn.execute("SELECT * FROM datasets WHERE dataset_id = ?", (dataset_id,)).fetchone()
+        return dict(row) if row else None
+
+    def get_backend(self, backend_id: str) -> dict[str, Any] | None:
+        row = self.conn.execute("SELECT * FROM backends WHERE backend_id = ?", (backend_id,)).fetchone()
+        return dict(row) if row else None
 
     def list_runs(self) -> list[dict[str, Any]]:
         rows = self.conn.execute("SELECT * FROM runs ORDER BY generated_at DESC").fetchall()
