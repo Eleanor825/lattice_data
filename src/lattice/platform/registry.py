@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from lattice.platform.state import can_transition
 from lattice.utils import ensure_dir
 
 
@@ -145,6 +146,23 @@ class PlatformRegistry:
         )
         self.conn.commit()
 
+    def update_run_status(self, run_id: str, status: str, payload: dict[str, Any] | None = None) -> None:
+        row = self.conn.execute("SELECT status, payload_json FROM runs WHERE run_id = ?", (run_id,)).fetchone()
+        if row is None:
+            raise KeyError(f"Run not found: {run_id}")
+        current_status = str(row["status"])
+        if not can_transition(current_status, status):  # type: ignore[arg-type]
+            raise ValueError(f"Invalid run status transition: {current_status} -> {status}")
+        payload_json = row["payload_json"]
+        current_payload = json.loads(payload_json)
+        if payload is not None:
+            current_payload.update(payload)
+        self.conn.execute(
+            "UPDATE runs SET status = ?, payload_json = ? WHERE run_id = ?",
+            (status, json.dumps(current_payload, ensure_ascii=False), run_id),
+        )
+        self.conn.commit()
+
     def list_runs(self) -> list[dict[str, Any]]:
         rows = self.conn.execute("SELECT * FROM runs ORDER BY generated_at DESC").fetchall()
         return [dict(row) for row in rows]
@@ -156,4 +174,3 @@ class PlatformRegistry:
     def list_backends(self) -> list[dict[str, Any]]:
         rows = self.conn.execute("SELECT * FROM backends ORDER BY backend_name, model_name").fetchall()
         return [dict(row) for row in rows]
-
