@@ -3,6 +3,7 @@
 Lattice now includes an execution layer for compiling normalized JSONL source records through multiple engines:
 
 - `local`
+- `pandas`
 - `spark`
 - `flink`
 
@@ -54,7 +55,56 @@ The codebase now has:
 
 - a shared engine abstraction
 - local execution
+- pandas execution
 - Spark execution
 - a Flink execution entrypoint and runtime checks
 
 That means the platform is no longer purely conceptual. It already runs locally, through Spark, and through a validated local Flink path.
+
+## Migration Rule
+
+If your workflow stays inside the Lattice data contract, migration is fast:
+
+- the input remains normalized JSONL or a compiled Lattice dataset
+- the workflow spec does not change
+- the model backend does not change
+- only the execution engine changes
+
+In that case, moving from `pandas` to `spark` or `flink` does not require business-logic changes. You only switch the `engine` field or rerun from an existing manifest.
+
+Example:
+
+```bash
+PYTHONPATH=src python3 -m lattice phase2-migrate \
+  --manifest outputs/phase2-demo/phase2_manifest.json \
+  --engine spark \
+  --output outputs/phase2-demo-spark
+```
+
+You can also execute the saved workflow spec directly:
+
+```bash
+PYTHONPATH=src python3 -m lattice run-spec \
+  --spec outputs/phase2-demo/workflow_spec.json \
+  --engine flink \
+  --output outputs/phase2-demo-flink
+```
+
+And if a registry-backed run needs to be reproduced, you can rerun it from the saved config snapshot:
+
+```bash
+PYTHONPATH=src python3 -m lattice run-rerun \
+  --db outputs/platform/registry.db \
+  --run-id <existing-run-id>
+```
+
+## When Changes Are Still Required
+
+You still need code or config updates when one of these changes:
+
+- the raw source format is outside the normalized Lattice schema
+- the new runtime has different dependency or cluster settings
+- the model backend itself changes, such as moving from local open training to a closed provider connector
+- the workload size forces new partitioning, checkpointing, or resource policies
+
+So the short answer is: `pandas -> spark/flink` is designed to be a configuration migration first, not a rewrite.

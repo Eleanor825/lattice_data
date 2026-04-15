@@ -6,7 +6,7 @@ from typing import Any
 
 from lattice.engines import EngineConfig, run_engine_compile
 from lattice.platform.registry import PlatformRegistry
-from lattice.platform.specs import BackendRef, DatasetRef, ExecutionRef, WorkflowSpec
+from lattice.platform.runtime import build_phase2_spec
 from lattice.platform.sync import prepare_phase2_run, sync_phase2_manifest
 from lattice.phase2.providers import ModelBackendConfig, run_backend_workflow
 from lattice.sources.common import timestamp_now
@@ -41,6 +41,7 @@ def run_phase2_pipeline(config: Phase2Config) -> dict[str, Any]:
     output_dir = ensure_dir(config.output_dir)
     prepared_dir = Path(config.input_dir)
     run_id = ""
+    workflow_spec = build_phase2_spec(config)
 
     if not config.compiled_input:
         prepared_dir = ensure_dir(output_dir / "prepared")
@@ -54,37 +55,6 @@ def run_phase2_pipeline(config: Phase2Config) -> dict[str, Any]:
             )
         )
 
-    workflow_spec = WorkflowSpec(
-        phase="phase2",
-        workflow=config.workflow,
-        run_name=config.run_name,
-        dataset=DatasetRef(
-            path=str(prepared_dir),
-            compiled=True,
-            domain=config.domain,
-        ),
-        backend=BackendRef(
-            backend=config.model_backend,
-            model_name=config.model_name,
-            provider=config.provider,
-            model_family=config.model_family,
-            api_base=config.api_base,
-            api_key_env=config.api_key_env,
-        ),
-        execution=ExecutionRef(
-            engine=config.engine,
-            local_only=config.engine in {"local", "pandas"},
-        ),
-        checkpoint_dir=config.checkpoint_dir,
-        params={
-            "epochs": config.epochs,
-            "batch_size": config.batch_size,
-            "learning_rate": config.learning_rate,
-            "max_length": config.max_length,
-            "hidden_size": config.hidden_size,
-        },
-    )
-
     if config.registry_db:
         prepare_result = prepare_phase2_run(
             config.registry_db,
@@ -96,6 +66,9 @@ def run_phase2_pipeline(config: Phase2Config) -> dict[str, Any]:
         registry = PlatformRegistry(config.registry_db)
         registry.update_run_status(run_id, "running")
         registry.close()
+
+    workflow_spec_path = output_dir / "workflow_spec.json"
+    write_json(workflow_spec_path, workflow_spec.to_dict())
 
     backend_result = run_backend_workflow(
         workflow=config.workflow,
@@ -129,6 +102,7 @@ def run_phase2_pipeline(config: Phase2Config) -> dict[str, Any]:
         "output_dir": str(Path(output_dir).resolve()),
         "config": asdict(config),
         "workflow_spec": workflow_spec.to_dict(),
+        "workflow_spec_path": str(workflow_spec_path.resolve()),
         "backend_result": backend_result,
     }
     write_json(output_dir / "phase2_manifest.json", manifest)

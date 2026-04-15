@@ -20,6 +20,18 @@ class PlatformRegistry:
     def close(self) -> None:
         self.conn.close()
 
+    def _decode_row(self, row: sqlite3.Row | None) -> dict[str, Any] | None:
+        if row is None:
+            return None
+        payload = dict(row)
+        payload_json = payload.get("payload_json")
+        if isinstance(payload_json, str):
+            try:
+                payload["payload"] = json.loads(payload_json)
+            except json.JSONDecodeError:
+                payload["payload"] = None
+        return payload
+
     def _init_schema(self) -> None:
         self.conn.executescript(
             """
@@ -151,7 +163,7 @@ class PlatformRegistry:
         if row is None:
             raise KeyError(f"Run not found: {run_id}")
         current_status = str(row["status"])
-        if not can_transition(current_status, status):  # type: ignore[arg-type]
+        if current_status != status and not can_transition(current_status, status):  # type: ignore[arg-type]
             raise ValueError(f"Invalid run status transition: {current_status} -> {status}")
         payload_json = row["payload_json"]
         current_payload = json.loads(payload_json)
@@ -165,24 +177,24 @@ class PlatformRegistry:
 
     def get_run(self, run_id: str) -> dict[str, Any] | None:
         row = self.conn.execute("SELECT * FROM runs WHERE run_id = ?", (run_id,)).fetchone()
-        return dict(row) if row else None
+        return self._decode_row(row)
 
     def get_dataset(self, dataset_id: str) -> dict[str, Any] | None:
         row = self.conn.execute("SELECT * FROM datasets WHERE dataset_id = ?", (dataset_id,)).fetchone()
-        return dict(row) if row else None
+        return self._decode_row(row)
 
     def get_backend(self, backend_id: str) -> dict[str, Any] | None:
         row = self.conn.execute("SELECT * FROM backends WHERE backend_id = ?", (backend_id,)).fetchone()
-        return dict(row) if row else None
+        return self._decode_row(row)
 
     def list_runs(self) -> list[dict[str, Any]]:
         rows = self.conn.execute("SELECT * FROM runs ORDER BY generated_at DESC").fetchall()
-        return [dict(row) for row in rows]
+        return [self._decode_row(row) for row in rows if row is not None]
 
     def list_datasets(self) -> list[dict[str, Any]]:
         rows = self.conn.execute("SELECT * FROM datasets ORDER BY generated_at DESC").fetchall()
-        return [dict(row) for row in rows]
+        return [self._decode_row(row) for row in rows if row is not None]
 
     def list_backends(self) -> list[dict[str, Any]]:
         rows = self.conn.execute("SELECT * FROM backends ORDER BY backend_name, model_name").fetchall()
-        return [dict(row) for row in rows]
+        return [self._decode_row(row) for row in rows if row is not None]

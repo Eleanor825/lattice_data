@@ -5,351 +5,143 @@
   <a href="./README.zh-CN.md">
     <img alt="中文" src="https://img.shields.io/badge/中文-2563eb?style=for-the-badge">
   </a>
-  <a href="#demo">
-    <img alt="Demo" src="https://img.shields.io/badge/Demo-0f766e?style=for-the-badge">
+  <a href="./docs/README.md">
+    <img alt="Docs" src="https://img.shields.io/badge/Docs-0f766e?style=for-the-badge">
   </a>
-  <a href="#docs">
-    <img alt="Docs" src="https://img.shields.io/badge/Docs-7c3aed?style=for-the-badge">
-  </a>
-  <a href="#roadmap">
-    <img alt="Roadmap" src="https://img.shields.io/badge/Roadmap-b45309?style=for-the-badge">
+  <a href="./docs/demo.md">
+    <img alt="Demo" src="https://img.shields.io/badge/Demo-7c3aed?style=for-the-badge">
   </a>
 </div>
 
 # Lattice
 
-> An open-source data-centric platform for large-model training and optimization in science and materials.
+Lattice is an open-source platform for collecting, structuring, and using high-quality training data for large-model workflows in science and materials.
 
-Lattice is a platform for building, organizing, and using high-quality training data across the large-model lifecycle: pretraining, continued pretraining, fine-tuning, and post-training.
-
-It starts from the hardest part first: turning fragmented scientific sources into structured, provenance-aware, training-ready data.
+It focuses on one concrete problem first: turning fragmented scientific sources into provenance-aware, training-ready datasets that can be consumed by pretraining, continued pretraining, fine-tuning, and post-training workflows.
 
 ![Lattice roadmap](figures/phase1-phase2-roadmap.png)
 
-## Project Goal
+## What Lattice Does
 
-The goal of Lattice is to build a platform that can automatically collect, process, organize, and use high-quality training data from many different sources, and make the full model-training workflow easier to operate.
+Lattice provides a single workflow for:
 
-In the long run, Lattice should support:
+1. ingesting heterogeneous scientific sources
+2. normalizing them into a stable schema family
+3. tracking provenance, licensing, and deduplication
+4. compiling reusable training views
+5. running local or distributed execution
+6. connecting compiled data to training workflows
 
-- pretraining from scratch
-- continued pretraining on top of existing models
-- task-specific fine-tuning
-- safety and alignment optimization in post-training
-- conversational interaction
-- drag-and-drop composition
-- reusable pipeline blocks
+## Current Scope
 
-The intended experience is that users can assemble large-model training and optimization workflows like building blocks, without needing to hand-write complex code for every step.
-
-## Why This Platform Is Needed
-
-Today, high-quality model training in scientific domains is difficult for two reasons at once:
-
-1. The data problem
-   Scientific and materials data is fragmented across papers, preprints, databases, repositories, patents, and educational resources.
-2. The workflow problem
-   Even after data is collected, users still need to manually connect data preparation, pretraining, continued pretraining, fine-tuning, and post-training pipelines.
-
-This means that the bottleneck is not just model design. It is also:
-
-- how to gather data
-- how to standardize it
-- how to track provenance and licensing
-- how to turn it into training-ready views
-- how to connect it to downstream training workflows
-
-Lattice is meant to solve both the data layer and the workflow layer, starting from data infrastructure and expanding into training orchestration.
-
-## Platform Structure
-
-### Phase 1: Data Foundation
-
-Phase 1 builds the data engine of the platform.
-
-Its purpose is to automatically ingest heterogeneous sources and convert them into normalized, provenance-aware, reusable training data.
-
-Phase 1 includes:
-
-- source registry and source adapters
-- ingestion from APIs, files, web resources, and databases
-- schema normalization
-- provenance, licensing, and dedup tracking
-- quality filtering and data cleaning
-- compiled dataset views for:
-  - pretraining
-  - QA
-  - instruction tuning
-  - knowledge records
-
-This is the part of the platform that is currently implemented in the repository.
-
-### Phase 2: Training and Optimization Layer
-
-Phase 2 builds the model-training and optimization layer on top of Phase 1.
-
-Its purpose is to let users move from data preparation to end-to-end model improvement workflows.
-
-Phase 2 is intended to support:
-
-- pretraining
-- continued pretraining
-- fine-tuning
-- post-training for safety and alignment
-- data valuation and data selection
-- mixture optimization and feeding strategy design
-- conversational and low-code workflow control
-
-In short:
-
-- Phase 1 answers: **How do we build high-quality training data?**
-- Phase 2 answers: **How do we use that data to train and optimize models more easily and more effectively?**
-
-## Current Status
-
-The repository is currently implementing **Phase 1** of the platform.
-
-What is already in place:
-
-- a runnable compiler CLI
-- a stable schema boundary
-- provenance-aware normalization
-- filtering and deduplication
-- compiled dataset views
-- a starter source registry
-- real-source demo fetchers
-- open-source adapters for:
-  - OpenAlex
-  - Crossref
-  - arXiv
-  - PubChem
-  - OQMD
-  - NOMAD
-  - JARVIS
-  - Wikidata
-- Materials Project integration with API-key gating
-- engine execution layer for:
-  - local
-  - Spark
-  - Flink-compatible code path
-- tests and CI
-
-So today, Lattice is already functioning as the **data foundation layer** of the future platform, but it is not yet the full training platform described above.
-
-## Capability Status
-
-| Capability | Status |
-|---|---|
-| Multi-source ingestion | ✅ Implemented |
-| Provenance / license / dedup tracking | ✅ Implemented |
-| Dataset view compilation | ✅ Implemented |
-| Local execution | ✅ Implemented |
-| Spark execution | ✅ Implemented |
-| Flink execution | ✅ Implemented |
-| Pretraining workflow | ✅ Implemented |
-| Continued pretraining workflow | ✅ Implemented |
-| Fine-tuning workflow | ✅ Implemented |
-| Post-training workflow | ✅ Implemented |
-| Conversational workflow | ◐ Platform target, not fully implemented yet |
-| Drag-and-drop workflow | ◐ Platform target, not fully implemented yet |
-
-## Data Sources and Types
-
-### Source Coverage
-
-| Source | Category | Access | Main Use | Schema Targets |
-|---|---|---|---|---|
-| OpenAlex | Scholarly metadata | REST API | work discovery, provenance, metadata enrichment | `Document` |
-| Crossref | Scholarly metadata | REST API | DOI metadata, metadata enrichment | `Document` |
-| arXiv | Preprints / papers | API + bulk | abstracts and paper text | `Document` |
-| Materials Project | Structured materials DB | API | material summaries and properties | `StructuredRecord`, `KnowledgeRecord` |
-| OQMD | Structured materials DB | API / download | structure and DFT properties | `StructuredRecord` |
-| NOMAD | Materials repository | API | repository entries and materials metadata | `StructuredRecord`, `Document` |
-| JARVIS | Materials repository | OPTIMADE / tools | materials structure and property records | `StructuredRecord`, `Document` |
-| PubChem | Chemistry database | PUG REST | compound properties and identifiers | `StructuredRecord`, `KnowledgeRecord` |
-| Wikidata | Open knowledge graph | MediaWiki API | entity descriptions and linked knowledge | `KnowledgeRecord` |
-| PatentsView | Patents | ODP migration | patent metadata and technical prior art | `Document`, `StructuredRecord` |
-| COD | Crystal structure DB | search / dumps | crystal structure coverage | `StructuredRecord` |
-
-### Data Types
-
-| Type | Meaning | Example Sources |
+| Area | Status | Notes |
 |---|---|---|
-| `Document` | Long-form text for reading or training | arXiv, OpenAlex, Crossref |
-| `StructuredRecord` | Entity-centered structured properties | OQMD, NOMAD, JARVIS, PubChem |
-| `KnowledgeRecord` | Subject-predicate-object knowledge units | Wikidata, Materials Project, PubChem |
-| `InstructionTrace` | Instruction-following or workflow examples | future task recipes and generated workflows |
+| Phase 1 data ingestion and compilation | ✅ Implemented | Source registry, adapters, normalization, filtering, dedup, manifests |
+| Open-source science/materials source coverage | ✅ Implemented | OpenAlex, Crossref, arXiv, PubChem, OQMD, NOMAD, JARVIS, Wikidata, Europe PMC, Materials Cloud, and more |
+| Local execution | ✅ Implemented | Local Python and pandas paths |
+| Distributed execution | ✅ Implemented | Spark and Flink local runtimes verified |
+| Phase 2 training workflows | ✅ Implemented | `pretrain`, `continue`, `finetune`, `posttrain` |
+| Registry and job API | ✅ Implemented | Run registry, async submission, rerun, manifest sync |
+| Workflow-spec execution | ✅ Implemented | Saved specs can be replayed or migrated across engines |
+| Conversational / drag-and-drop UI | ◐ In progress | Product direction, not the current repository focus |
 
-### Source Coverage Status
+## Core Capabilities
 
-| Source | Priority | Status | Access | Schema |
-|---|---|---|---|---|
-| OpenAlex | P0 | ✅ Implemented | REST API | `Document` |
-| Crossref | P0 | ✅ Implemented | REST API | `Document` |
-| arXiv | P0 | ✅ Implemented | API + bulk | `Document` |
-| Materials Project | P0 | ◐ Implemented, API-key gated | API | `StructuredRecord`, `KnowledgeRecord` |
-| OQMD | P0 | ✅ Implemented | API / download | `StructuredRecord` |
-| NOMAD | P0 | ✅ Implemented | API | `StructuredRecord`, `Document` |
-| JARVIS | P0 | ✅ Implemented | OPTIMADE / tools | `StructuredRecord`, `Document` |
-| Wikidata | P0 | ✅ Implemented | MediaWiki API | `KnowledgeRecord` |
-| PubChem | P0 | ✅ Implemented | PUG REST | `StructuredRecord`, `KnowledgeRecord` |
-| PatentsView | P0 | ◐ Optional / migration blocker | ODP migration | `Document`, `StructuredRecord` |
-| COD | P1 | ◐ Planned | search / dumps | `StructuredRecord` |
+| Capability | What it means in this repo |
+|---|---|
+| Multi-source ingestion | Fetch from APIs, archives, web resources, and structured repositories |
+| Stable schema boundary | Convert raw inputs into `Document`, `StructuredRecord`, `KnowledgeRecord`, and `InstructionTrace`-style outputs |
+| Training-ready compilation | Export reusable `pretrain`, `qa`, `instruction`, and `knowledge` views |
+| Provenance and traceability | Preserve source identity, output manifests, registry records, and workflow specs |
+| Engine portability | Run the same data-preparation logic with pandas, Spark, or Flink |
+| Training orchestration | Run local reference workflows and provider-backed Phase 2 jobs |
+| Reproducibility | Re-execute a saved workflow spec or rerun a registry-backed job |
 
-### Engine Status
+## Repository Layout
 
-| Engine | Local Available | Verified | Status | Notes |
-|---|---:|---:|---|---|
-| Local | ✅ | ✅ | Ready | Default development path |
-| Spark | ✅ | ✅ | Ready | Local Spark mode verified |
-| Flink | ✅ | ✅ | Ready | Validated with PyFlink + Java 17 local runtime |
+| Path | Purpose |
+|---|---|
+| `src/lattice/` | Platform source code |
+| `configs/` | Source registry and configuration files |
+| `examples/` | Demo datasets and runnable examples |
+| `docs/` | Structured documentation, comparisons, demos, and research notes |
+| `tests/` | End-to-end and component tests |
+| `figures/` | README and documentation figures |
 
-## Platform Comparison
+## Quick Start
 
-The table below focuses on the capability combination that matters most for Lattice.
+Check local runtimes:
 
-Legend:
+```bash
+PYTHONPATH=src python3 -m lattice engine-check
+```
 
-- `✅` = clearly supported
-- `◐` = partially supported
-- `❌` = not clearly supported
+Run a small Phase 1 release:
 
-| Platform | Open | Sci/Mat | Compiler | Trace | Pretrain | Continue | Fine-tune | Post-train | Local | Chat / DnD |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **Lattice** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| NVIDIA NeMo Curator | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| Databricks Mosaic AI | ❌ | ❌ | ◐ | ◐ | ✅ | ✅ | ✅ | ◐ | ❌ | ◐ |
-| H2O LLM Studio / DataStudio | ❌ | ❌ | ◐ | ◐ | ❌ | ◐ | ✅ | ◐ | ◐ | ✅ |
-| Sparkflows | ❌ | ❌ | ◐ | ❌ | ❌ | ◐ | ✅ | ❌ | ◐ | ✅ |
-| Kubeflow | ✅ | ❌ | ❌ | ❌ | ◐ | ◐ | ✅ | ◐ | ✅ | ❌ |
+```bash
+PYTHONPATH=src python3 -m lattice phase1-run \
+  --data-root outputs/phase1-demo \
+  --registry configs/source_registry.json \
+  --release-name materials-demo \
+  --source openalex \
+  --source pubchem \
+  --compound "lithium iron phosphate" \
+  --limit 1
+```
 
-What Lattice is trying to combine, and most existing platforms do not combine in one place:
+Run a Phase 2 workflow:
 
-- science / materials as the first-class domain
-- raw scientific sources as the input layer, not just pre-made datasets
-- provenance / license / dedup as a core platform capability
-- training-data compilation into multiple reusable views
-- local execution plus distributed execution
-- a path from data platform to training platform
+```bash
+PYTHONPATH=src python3 -m lattice phase2-run \
+  --workflow finetune \
+  --engine pandas \
+  --input examples/training/demo_dataset \
+  --output outputs/phase2-demo \
+  --run-name finetune-demo \
+  --model-backend local_tiny \
+  --model-name tiny-local \
+  --compiled-input
+```
 
-## Daily Updates
+Replay a saved workflow spec:
 
-### 2026-04-13
+```bash
+PYTHONPATH=src python3 -m lattice run-spec \
+  --spec outputs/phase2-demo/workflow_spec.json \
+  --engine spark \
+  --output outputs/phase2-demo-spark
+```
 
-- Created the standalone `lattice` repository and pushed the first public version.
-- Implemented the first runnable Phase 1 compiler.
-- Added the first materials example dataset and end-to-end tests.
-- Added open-source scaffolding:
-  - MIT license
-  - contributing guide
-  - changelog
-  - CI workflow
+Rerun a registry-backed job:
 
-### 2026-04-14
+```bash
+PYTHONPATH=src python3 -m lattice run-rerun \
+  --db outputs/platform/registry.db \
+  --run-id <existing-run-id>
+```
 
-- Added a real-source demo fetcher for OpenAlex, arXiv, and PubChem.
-- Added a starter source registry and storage architecture document.
-- Added registry-driven P0 materials source adapters for OQMD, NOMAD, and Materials Project.
-- Extended open-source source coverage with Crossref, Wikidata, and JARVIS.
-- Extended the compiler so `KnowledgeRecord` sources can also flow into QA, instruction, and knowledge views.
-- Marked PatentsView as an optional connector while the legacy API remains discontinued during ODP migration.
-- Added a local execution layer that can compile normalized records with local Python execution, Spark local mode, and a Flink-compatible execution path with runtime checks.
-- Verified local and Spark execution in the current environment.
-- Reorganized the repository structure and moved planning documents into `docs/research/`.
-- Added the Phase 1 / Phase 2 roadmap figure.
+## Documentation
 
-<a id="demo"></a>
+Detailed material has been moved out of the homepage and into `docs/`.
 
-## Small Demo
-
-### Demo A: Real-source Data Compilation
-
-This demo fetches a small public sample from:
-
-- OpenAlex
-- arXiv
-- PubChem
-
-and compiles them into training-ready views.
-
-Example result:
-
-- input records: `4`
-- kept records: `4`
-- source coverage:
-  - `arxiv: 1`
-  - `openalex: 1`
-  - `pubchem: 2`
-- output views:
-  - `pretrain_view: 4`
-  - `qa_view: 10`
-  - `instruction_view: 4`
-  - `knowledge_view: 10`
-
-Artifacts:
-
-- [Real-source manifest](data/demo_compiled/solid_state/reports/manifest.json)
-
-### Demo B: Local and Spark Runtime Execution
-
-This demo runs the same normalized runtime fixture through:
-
-- local execution
-- Spark local execution
-
-Example result:
-
-- input records: `4`
-- kept records: `3`
-- dropped:
-  - `boilerplate: 1`
-- schema counts:
-  - `Document: 1`
-  - `StructuredRecord: 1`
-  - `KnowledgeRecord: 1`
-
-Artifacts:
-
-- [Local runtime manifest](outputs/runtime-local/reports/manifest.json)
-- [Spark runtime manifest](outputs/runtime-spark/reports/manifest.json)
-
-## Repository Structure
-
-- `src/lattice/`: core package
-- `configs/`: source registry and fetch configuration
-- `docs/`: architecture notes and research documents
-- `docs/research/`: proposal, survey, and planning notes
-- `examples/`: small sample inputs
-- `tests/`: unit and end-to-end tests
-
-<a id="roadmap"></a>
+- [Documentation index](./docs/README.md)
+- [Overview](./docs/overview.md)
+- [Phase 1 pipeline](./docs/phase1.md)
+- [Training workflows](./docs/training.md)
+- [Engine runtime notes](./docs/engines.md)
+- [Source catalog](./docs/source-catalog.md)
+- [Platform comparison](./docs/platform-comparison.md)
+- [Storage architecture](./docs/storage_architecture.md)
+- [Demo](./docs/demo.md)
+- [Research notes](./docs/research/README.md)
+- [Changelog](./CHANGELOG.md)
 
 ## Roadmap
 
-Near-term priorities:
+- Expand open-source source coverage and quality controls in Phase 1.
+- Harden Phase 2 orchestration, registry-backed execution, and provider adapters.
+- Add a clearer product surface for conversation-driven and drag-and-drop workflows.
 
-- expand open-source source coverage in Phase 1
-- improve source registry and license gating
-- build a stronger silver layer for cross-source alignment
-- release a larger materials-domain dataset
-- fully stabilize Flink runtime support
+## Status
 
-Long-term priorities:
-
-- connect Phase 1 outputs to model training workflows
-- support pretraining, continued pretraining, fine-tuning, and post-training
-- add data valuation and mixture optimization
-- add conversational and drag-and-drop workflow control
-
-<a id="docs"></a>
-
-## Supporting Docs
-
-- [Storage Architecture](docs/storage_architecture.md)
-- [Engine Runtime Notes](docs/engines.md)
-- [Training Workflows](docs/training.md)
-- [Demo Summary](docs/demo.md)
-- [Demo Showcase](docs/demo-showcase.html)
-- [Source Catalog](docs/source-catalog.md)
-- [Platform Comparison](docs/platform-comparison.md)
-- [Research Notes Index](docs/research/README.md)
+The repository is runnable today. The current local test suite covers ingestion, engines, training workflows, registry sync, workflow replay, and API rerun paths.

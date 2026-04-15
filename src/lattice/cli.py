@@ -8,6 +8,8 @@ from pathlib import Path
 from lattice.compiler import CompilerConfig, compile_dataset
 from lattice.engines import EngineConfig, engine_check, run_engine_compile
 from lattice.phase2 import Phase2Config, run_phase2_pipeline
+from lattice.platform import run_workflow_spec, workflow_spec_from_dict
+from lattice.platform.jobs import rerun_job
 from lattice.platform.server import create_app
 from lattice.platform.sync import sync_phase1_manifest, sync_phase2_manifest
 from lattice.sources import DemoFetchConfig, SourceFetchConfig, run_demo_fetch, run_source_fetch
@@ -179,6 +181,33 @@ def _build_parser() -> argparse.ArgumentParser:
     phase2_parser.add_argument("--max-length", type=int, default=192, help="Maximum sequence length.")
     phase2_parser.add_argument("--hidden-size", type=int, default=96, help="Hidden size for local tiny backend.")
 
+    phase2_migrate_parser = subparsers.add_parser(
+        "phase2-migrate",
+        help="Re-run an existing phase2 manifest on another engine with minimal overrides.",
+    )
+    phase2_migrate_parser.add_argument("--manifest", required=True, help="Existing phase2_manifest.json path.")
+    phase2_migrate_parser.add_argument("--engine", required=True, choices=["pandas", "spark", "flink"])
+    phase2_migrate_parser.add_argument("--output", required=True, help="Output directory for the migrated run.")
+    phase2_migrate_parser.add_argument("--run-name", default="", help="Optional new run name. Defaults to previous run name + engine suffix.")
+    phase2_migrate_parser.add_argument("--registry-db", default="", help="Optional SQLite registry DB path override.")
+
+    run_spec_parser = subparsers.add_parser(
+        "run-spec",
+        help="Run a workflow spec JSON directly, or run the workflow_spec embedded in a manifest.",
+    )
+    run_spec_parser.add_argument("--spec", required=True, help="Path to workflow_spec.json or a manifest containing workflow_spec.")
+    run_spec_parser.add_argument("--registry-db", default="", help="Optional SQLite registry DB path override.")
+    run_spec_parser.add_argument("--input", default="", help="Optional input override.")
+    run_spec_parser.add_argument("--output", default="", help="Optional output or data_root override.")
+    run_spec_parser.add_argument("--engine", default="", choices=["", "pandas", "spark", "flink"], help="Optional engine override.")
+
+    rerun_parser = subparsers.add_parser(
+        "run-rerun",
+        help="Clone a previous run from the registry config snapshot and submit a new retry run.",
+    )
+    rerun_parser.add_argument("--db", required=True, help="SQLite registry DB path.")
+    rerun_parser.add_argument("--run-id", required=True, help="Existing run ID to rerun.")
+
     stats_parser = subparsers.add_parser("stats", help="Print summary stats from a compiled output.")
     stats_parser.add_argument("--path", required=True, help="Compiled output directory or manifest path.")
 
@@ -340,6 +369,70 @@ def _handle_phase2_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _handle_phase2_migrate(args: argparse.Namespace) -> int:
+    source_manifest = read_json(args.manifest)
+    source_config = source_manifest["config"]
+    run_name = args.run_name or f"{source_manifest['run_name']}-{args.engine}"
+    registry_db = args.registry_db or source_config.get("registry_db", "")
+
+    manifest = run_phase2_pipeline(
+        Phase2Config(
+            workflow=source_manifest["workflow"],
+            engine=args.engine,
+            input_dir=source_manifest["input_dir"],
+            output_dir=args.output,
+            run_name=run_name,
+            model_backend=source_config["model_backend"],
+            model_name=source_config["model_name"],
+            compiled_input=bool(source_config.get("compiled_input", False)),
+            provider=source_config.get("provider", "local"),
+            model_family=source_config.get("model_family", "open"),
+            api_base=source_config.get("api_base", ""),
+            api_key_env=source_config.get("api_key_env", ""),
+            domain=source_config.get("domain", source_manifest["config"]["domain"]),
+            checkpoint_dir=source_config.get("checkpoint_dir", ""),
+            registry_db=registry_db,
+            epochs=int(source_config.get("epochs", 1)),
+            batch_size=int(source_config.get("batch_size", 2)),
+            learning_rate=float(source_config.get("learning_rate", 3e-4)),
+            max_length=int(source_config.get("max_length", 192)),
+            hidden_size=int(source_config.get("hidden_size", 96)),
+        )
+    )
+    print(json.dumps(manifest, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _handle_run_spec(args: argparse.Namespace) -> int:
+    source_payload = read_json(args.spec)
+    spec_payload = source_payload.get("workflow_spec", source_payload)
+    spec = workflow_spec_from_dict(spec_payload)
+
+    if args.input:
+        spec.dataset.path = args.input
+        if spec.phase == "phase2":
+            spec.params["input_dir"] = args.input
+    if args.output:
+        if spec.phase == "phase1":
+            spec.dataset.path = args.output
+            spec.params["data_root"] = args.output
+        else:
+            spec.params["output_dir"] = args.output
+    if args.engine:
+        spec.execution.engine = args.engine
+        spec.execution.local_only = args.engine in {"local", "pandas"}
+
+    manifest = run_workflow_spec(spec, registry_db=args.registry_db)
+    print(json.dumps(manifest, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _handle_run_rerun(args: argparse.Namespace) -> int:
+    payload = rerun_job(args.db, args.run_id)
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _handle_registry_sync(args: argparse.Namespace) -> int:
     if args.phase == "phase1":
         payload = sync_phase1_manifest(args.db, args.manifest)
@@ -433,6 +526,12 @@ def main(argv: list[str] | None = None) -> int:
         return _handle_training_workflow(args, "posttrain")
     if args.command == "phase2-run":
         return _handle_phase2_run(args)
+    if args.command == "phase2-migrate":
+        return _handle_phase2_migrate(args)
+    if args.command == "run-spec":
+        return _handle_run_spec(args)
+    if args.command == "run-rerun":
+        return _handle_run_rerun(args)
     if args.command == "registry-sync":
         return _handle_registry_sync(args)
     if args.command == "registry-list":

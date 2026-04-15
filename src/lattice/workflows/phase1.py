@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from lattice.compiler import CompilerConfig, compile_dataset
+from lattice.platform.runtime import build_phase1_spec
 from lattice.platform.sync import sync_phase1_manifest
 from lattice.silver import SilverLinkConfig, build_silver_layer
 from lattice.sources.common import timestamp_now
@@ -45,6 +46,9 @@ def run_phase1_pipeline(config: Phase1Config) -> dict[str, Any]:
     paths = _release_paths(config)
     for path in paths.values():
         ensure_dir(path)
+    workflow_spec = build_phase1_spec(config)
+    workflow_spec_path = paths["manifests"] / "workflow_spec.json"
+    write_json(workflow_spec_path, workflow_spec.to_dict())
 
     selected_sources = config.sources or implemented_sources(
         config.registry_path, include_optional=config.include_optional_sources
@@ -98,6 +102,8 @@ def run_phase1_pipeline(config: Phase1Config) -> dict[str, Any]:
         "data_root": str(paths["root"].resolve()),
         "paths": {name: str(path.resolve()) for name, path in paths.items()},
         "config": asdict(config),
+        "workflow_spec": workflow_spec.to_dict(),
+        "workflow_spec_path": str(workflow_spec_path.resolve()),
         "fetch": fetch_manifest,
         "bronze": bronze_manifest,
         "silver": silver_manifest,
