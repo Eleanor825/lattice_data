@@ -15,9 +15,15 @@
 
 # Lattice
 
-Lattice is an open-source platform for collecting, structuring, and using high-quality training data for large-model workflows in science and materials.
+Lattice is an open-source target-driven data compiler for science and materials.
 
-It focuses on one concrete problem first: turning fragmented scientific sources into provenance-aware, training-ready datasets that can be consumed by pretraining, continued pretraining, fine-tuning, and post-training workflows.
+It turns fragmented scientific sources into provenance-aware dataset assets for:
+
+- RAG
+- pretraining
+- supervised fine-tuning
+- preference modeling
+- evaluation
 
 <p>
   <img src="./figures/lattice-project-architecture.svg" alt="Lattice project architecture" width="100%">
@@ -25,24 +31,26 @@ It focuses on one concrete problem first: turning fragmented scientific sources 
 
 ## What Lattice Does
 
-Lattice provides a single workflow for:
+Lattice provides a single target-compiler workflow for:
 
 1. ingesting heterogeneous scientific sources
-2. normalizing them into a stable schema family
-3. tracking provenance, licensing, and deduplication
-4. compiling reusable training views
-5. running local or distributed execution
-6. connecting compiled data to training workflows
+2. normalizing them into shared artifacts
+3. tracking provenance, licensing, deduplication, and policy state
+4. compiling target-specific dataset assets
+5. producing reproducible manifests, dataset cards, and workflow summaries
+6. connecting compiled assets to platform and training workflows
 
 ## Current Scope
 
 | Area | Status | Notes |
 |---|---|---|
-| Phase 1 data ingestion and compilation | ✅ Implemented | Source registry, adapters, normalization, filtering, dedup, manifests |
+| Target compiler core path | ✅ Implemented | `TargetSpec`, artifact layer, transform registry, planner, manifests |
+| Phase 1 target families | ✅ Implemented | `rag_corpus`, `pretrain_corpus`, `sft_dataset`, `preference_dataset`, `eval_dataset` |
 | Open-source science/materials source coverage | ✅ Implemented | OpenAlex, Crossref, arXiv, PubChem, OQMD, NOMAD, JARVIS, Wikidata, Europe PMC, Materials Cloud, and more |
+| Target build API and rerun | ✅ Implemented | Platform API submission, registry sync, rerun support |
 | Local execution | ✅ Implemented | Local Python and pandas paths |
 | Distributed execution | ✅ Implemented | Spark and Flink local runtimes verified |
-| Phase 2 training workflows | ✅ Implemented | `pretrain`, `continue`, `finetune`, `posttrain` |
+| Phase 2 training workflows | ✅ Implemented | `pretrain`, `continue`, `finetune`, `posttrain` reference workflows |
 | Registry and job API | ✅ Implemented | Run registry, async submission, rerun, manifest sync |
 | Workflow-spec execution | ✅ Implemented | Saved specs can be replayed or migrated across engines |
 | Conversational / drag-and-drop UI | ◐ In progress | Product direction, not the current repository focus |
@@ -52,9 +60,11 @@ Lattice provides a single workflow for:
 | Capability | What it means in this repo |
 |---|---|
 | Multi-source ingestion | Fetch from APIs, archives, web resources, and structured repositories |
-| Stable schema boundary | Convert raw inputs into `Document`, `StructuredRecord`, `KnowledgeRecord`, and `InstructionTrace`-style outputs |
-| Training-ready compilation | Export reusable `pretrain`, `qa`, `instruction`, and `knowledge` views |
+| Stable schema boundary | Convert raw inputs into records and target-compiler artifacts |
+| Target-driven compilation | Build dataset assets from `TargetSpec` instead of fixed output views |
+| Training-ready and retrieval-ready outputs | Export `rag`, `pretrain`, `sft`, `preference`, and `eval` target assets |
 | Provenance and traceability | Preserve source identity, output manifests, registry records, and workflow specs |
+| Policy-aware packaging | Apply research-only, commercial-safe, and exclude-unknown policies |
 | Engine portability | Run the same data-preparation logic with pandas, Spark, or Flink |
 | Training orchestration | Run local reference workflows and provider-backed Phase 2 jobs |
 | Reproducibility | Re-execute a saved workflow spec or rerun a registry-backed job |
@@ -72,61 +82,61 @@ Lattice provides a single workflow for:
 
 ## Quick Start
 
-Check local runtimes:
+Build a RAG corpus:
 
 ```bash
-PYTHONPATH=src python3 -m lattice engine-check
-```
-
-Run a small Phase 1 release:
-
-```bash
-PYTHONPATH=src python3 -m lattice phase1-run \
-  --data-root outputs/phase1-demo \
-  --registry configs/source_registry.json \
-  --release-name materials-demo \
+PYTHONPATH=src python3 -m lattice build-target \
+  --input examples/materials/raw \
+  --output outputs/target-rag-demo \
+  --target-spec examples/targets/rag_corpus.yaml \
   --source openalex \
-  --source pubchem \
-  --compound "lithium iron phosphate" \
-  --limit 1
+  --source pubchem
 ```
 
-Run a Phase 2 workflow:
+Build an SFT dataset:
 
 ```bash
-PYTHONPATH=src python3 -m lattice phase2-run \
-  --workflow finetune \
-  --engine pandas \
-  --input examples/training/demo_dataset \
-  --output outputs/phase2-demo \
-  --run-name finetune-demo \
-  --model-backend local_tiny \
-  --model-name tiny-local \
-  --compiled-input
+PYTHONPATH=src python3 -m lattice build-target \
+  --input examples/materials/raw \
+  --output outputs/target-sft-demo \
+  --target-spec examples/targets/sft_dataset.yaml
 ```
 
-Replay a saved workflow spec:
+Build an eval dataset:
 
 ```bash
-PYTHONPATH=src python3 -m lattice run-spec \
-  --spec outputs/phase2-demo/workflow_spec.json \
-  --engine spark \
-  --output outputs/phase2-demo-spark
+PYTHONPATH=src python3 -m lattice build-target \
+  --input examples/materials/raw \
+  --output outputs/target-eval-demo \
+  --target-spec examples/targets/eval_dataset.yaml
 ```
 
-Rerun a registry-backed job:
+Run the target-compiler benchmark suite:
 
 ```bash
-PYTHONPATH=src python3 -m lattice run-rerun \
-  --db outputs/platform/registry.db \
-  --run-id <existing-run-id>
+make target-bench
 ```
+
+Legacy and compatibility paths still exist:
+
+- `compile`
+- `phase1-run`
+- `phase2-run`
+- `run-spec`
+- `run-rerun`
 
 ## Documentation
 
 Detailed material has been moved out of the homepage and into `docs/`.
 
 - [Documentation index](./docs/README.md)
+- [Target compiler quickstart](./docs/target-compiler-quickstart.md)
+- [Target compiler PRD](./docs/target-compiler-prd.md)
+- [Target compiler roadmap](./docs/target-compiler-roadmap.md)
+- [Target compiler technical spec](./docs/target-compiler-technical-spec.md)
+- [Target compiler validation plan](./docs/target-compiler-validation-plan.md)
+- [Target compiler extension guide](./docs/target-compiler-extension-guide.md)
+- [Target compiler release checklist](./docs/target-compiler-release-checklist.md)
 - [Overview](./docs/overview.md)
 - [Phase 1 pipeline](./docs/phase1.md)
 - [Training workflows](./docs/training.md)
@@ -140,10 +150,10 @@ Detailed material has been moved out of the homepage and into `docs/`.
 
 ## Roadmap
 
-- Expand open-source source coverage and quality controls in Phase 1.
-- Harden Phase 2 orchestration, registry-backed execution, and provider adapters.
-- Add a clearer product surface for conversation-driven and drag-and-drop workflows.
+- Phase 1: complete the target-compiler product surface and merge-hardening.
+- Phase 2: strengthen entity linking, target-aware scoring, source governance, and extension paths.
+- Final state: adaptive planning, richer benchmarks, broader governance, and ecosystem growth.
 
 ## Status
 
-The repository is runnable today. The current local test suite covers ingestion, engines, training workflows, registry sync, workflow replay, and API rerun paths.
+The repository is runnable today. The target-compiler path has fixture-backed regression coverage for target builds, policy modes, entity linking, scoring, extension, platform API submission, and rerun behavior.
