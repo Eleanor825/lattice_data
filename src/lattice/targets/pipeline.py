@@ -59,6 +59,32 @@ def _source_counts(records: list[Record]) -> dict[str, int]:
     return dict(counts)
 
 
+def _is_commercial_safe(license_name: str) -> bool:
+    lowered = license_name.strip().lower()
+    if not lowered or lowered == "unknown":
+        return False
+    blocked_terms = ("non-commercial", "nc", "all rights reserved")
+    return not any(term in lowered for term in blocked_terms)
+
+
+def _apply_policy(records: list[Record], license_policy: str) -> tuple[list[Record], Counter[str]]:
+    kept: list[Record] = []
+    dropped: Counter[str] = Counter()
+    for record in records:
+        license_name = str(record.metadata.license or "unknown")
+        if license_policy == "research_only":
+            kept.append(record)
+            continue
+        if license_policy == "exclude_unknown_license" and license_name.strip().lower() == "unknown":
+            dropped["policy_unknown_license"] += 1
+            continue
+        if license_policy == "commercial_safe" and not _is_commercial_safe(license_name):
+            dropped["policy_not_commercial_safe"] += 1
+            continue
+        kept.append(record)
+    return kept, dropped
+
+
 def _artifacts_to_rows(artifacts: list[Artifact]) -> list[dict[str, Any]]:
     return [artifact.payload | _artifact_metadata_payload(artifact) for artifact in artifacts]
 
@@ -115,7 +141,8 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
 
     raw_records, warnings = ingest_directory(config.input_dir, spec.domain)
     kept_records, dropped = filter_records(raw_records)
-    base_artifacts = build_base_artifacts(kept_records)
+    policy_kept_records, policy_dropped = _apply_policy(kept_records, spec.license_policy)
+    base_artifacts = build_base_artifacts(policy_kept_records)
 
     output_dir = ensure_dir(config.output_dir)
     outputs_dir = ensure_dir(output_dir / "outputs")
@@ -166,9 +193,9 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
         "artifact_summary": dict(Counter(artifact.artifact_type for artifact in base_artifacts + entity_artifacts)),
         "sources": list(config.source_names),
         "raw_record_count": len(raw_records),
-        "kept_record_count": len(kept_records),
-        "dropped_records": dict(dropped),
-        "source_counts": _source_counts(kept_records),
+        "kept_record_count": len(policy_kept_records),
+        "dropped_records": dict(dropped + policy_dropped),
+        "source_counts": _source_counts(policy_kept_records),
         "output_counts": output_counts,
         "warnings": warnings,
     }
