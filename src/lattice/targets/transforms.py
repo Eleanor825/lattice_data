@@ -181,6 +181,7 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
 
 def pretrain_span_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifact]:
     chunk_size = int(spec.target_config.get("chunk_size", spec.constraints.get("chunk_size", 1800)))
+    min_span_words = int(spec.target_config.get("min_span_words", spec.constraints.get("min_span_words", 20)))
     rows: list[Artifact] = []
     for artifact in inputs:
         if artifact.artifact_type != "Document":
@@ -190,6 +191,8 @@ def pretrain_span_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Ar
             continue
         for index, chunk in enumerate(chunk_text(text, max_chars=chunk_size), start=1):
             normalized = normalize_whitespace(chunk)
+            if len(normalized.split()) < min_span_words:
+                continue
             rows.append(
                 Artifact(
                     artifact_id=f"pre-{stable_hash(artifact.artifact_id + str(index))}",
@@ -202,7 +205,10 @@ def pretrain_span_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Ar
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={"pretrain_fitness": _pretrain_fitness(normalized)},
+                    quality={
+                        "pretrain_fitness": _pretrain_fitness(normalized),
+                        "source_balance_hint": artifact.source_refs[0].get("source_type", ""),
+                    },
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -305,7 +311,10 @@ def preference_pair_transform(inputs: list[Artifact], spec: TargetSpec) -> list[
                 },
                 source_refs=list(artifact.source_refs),
                 license_status=artifact.license_status,
-                quality={"preference_fitness": artifact.quality.get("sft_fitness", 0.0)},
+                quality={
+                    "preference_fitness": artifact.quality.get("sft_fitness", 0.0),
+                    "pair_validity": 1.0 if output and rejected and output != rejected else 0.0,
+                },
                 policy=dict(artifact.policy),
                 lineage=list(artifact.lineage),
             )
