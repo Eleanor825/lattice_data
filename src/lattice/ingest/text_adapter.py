@@ -6,6 +6,33 @@ from lattice.models import Record, build_metadata
 from lattice.utils import normalize_whitespace, stable_hash
 
 
+def _extract_sections(lines: list[str]) -> list[dict[str, str]]:
+    sections: list[dict[str, str]] = []
+    current_title = "body"
+    current_lines: list[str] = []
+    for line in lines:
+        if line.startswith("#"):
+            if current_lines:
+                sections.append(
+                    {
+                        "title": current_title,
+                        "text": "\n".join(current_lines).strip(),
+                    }
+                )
+                current_lines = []
+            current_title = line.lstrip("#").strip() or "body"
+            continue
+        current_lines.append(line)
+    if current_lines:
+        sections.append(
+            {
+                "title": current_title,
+                "text": "\n".join(current_lines).strip(),
+            }
+        )
+    return [section for section in sections if section["text"]]
+
+
 def parse_text_file(path: str | Path, domain: str) -> list[Record]:
     file_path = Path(path)
     text = file_path.read_text(encoding="utf-8")
@@ -20,6 +47,7 @@ def parse_text_file(path: str | Path, domain: str) -> list[Record]:
         body = "\n".join(lines[1:]).strip()
     else:
         body = "\n".join(lines)
+    sections = _extract_sections(lines[1:] if lines and lines[0].startswith("# ") else lines)
 
     metadata = build_metadata(
         source_path=file_path,
@@ -33,7 +61,6 @@ def parse_text_file(path: str | Path, domain: str) -> list[Record]:
             record_id=record_id,
             schema_type="Document",
             metadata=metadata,
-            payload={"title": title, "text": body, "sections": []},
+            payload={"title": title, "text": body, "sections": sections},
         )
     ]
-

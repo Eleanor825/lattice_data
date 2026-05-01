@@ -126,6 +126,7 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
             continue
         title = str(artifact.payload.get("title", "")).strip()
         text = str(artifact.payload.get("text", "")).strip()
+        sections = list(artifact.payload.get("sections", []))
         if not text:
             continue
         matched_entities: list[str] = []
@@ -133,7 +134,20 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
         for entity_id, aliases in entity_aliases.items():
             if any(alias and alias.lower() in lowered_text for alias in aliases):
                 matched_entities.append(entity_id)
-        for index, chunk in enumerate(chunk_text(text, max_chars=chunk_size), start=1):
+        chunk_sources: list[tuple[str, str]]
+        if sections:
+            chunk_sources = []
+            for section in sections:
+                section_title = str(section.get("title", "body")).strip() or "body"
+                section_text = str(section.get("text", "")).strip()
+                if not section_text:
+                    continue
+                for chunk in chunk_text(section_text, max_chars=chunk_size):
+                    chunk_sources.append((section_title, chunk))
+        else:
+            chunk_sources = [("body", chunk) for chunk in chunk_text(text, max_chars=chunk_size)]
+
+        for index, (section_name, chunk) in enumerate(chunk_sources, start=1):
             normalized = normalize_whitespace(chunk)
             if len(normalized.split()) < min_chunk_words:
                 continue
@@ -157,7 +171,7 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
                         "chunk_id": f"chunk-{stable_hash(artifact.artifact_id + str(index))}",
                         "text": normalized,
                         "title": title,
-                        "section": "body",
+                        "section": section_name,
                         "entity_ids": matched_entities,
                         "citation_payload": citation_payload,
                     },
