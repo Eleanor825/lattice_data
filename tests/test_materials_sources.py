@@ -82,6 +82,16 @@ class MaterialsSourceTest(unittest.TestCase):
         value = resolve_materials_project_api_key()
         self.assertTrue(value is None or isinstance(value, str))
 
+    def test_materials_project_gracefully_skips_without_key(self) -> None:
+        from lattice.sources.materials_project import fetch_materials_project_materials
+
+        rows, warnings = fetch_materials_project_materials(["Li", "O"], limit=1, domain="materials")
+        if resolve_materials_project_api_key():
+            self.assertGreaterEqual(len(rows), 1)
+        else:
+            self.assertEqual(rows, [])
+            self.assertTrue(any("MP_API_KEY" in warning for warning in warnings))
+
 
 if __name__ == "__main__":
     unittest.main()
