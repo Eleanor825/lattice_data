@@ -1,7 +1,10 @@
-.PHONY: test compile-example demo fetch-p0 phase1-release engine-check engine-local engine-pandas engine-spark engine-flink train-pretrain train-continue train-finetune train-post phase2-open phase2-closed registry-sync serve-platform stats clean
+.PHONY: test target-bench compile-example demo fetch-p0 phase1-release engine-check engine-local engine-pandas engine-spark engine-flink train-pretrain train-continue train-finetune train-post phase2-open phase2-closed registry-sync serve-platform stats clean
 
 test:
 	PYTHONPATH=src python3 -m unittest discover -s tests -v
+
+target-bench:
+	PYTHONPATH=src python3 scripts/benchmark_target_compiler.py
 
 compile-example:
 	PYTHONPATH=src python3 -m lattice compile \

@@ -1,0 +1,97 @@
+{
+  "command": [
+    "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+    "scripts/benchmark_target_compiler.py"
+  ],
+  "returncode": 0,
+  "stdout": "Ran 12 test files\n",
+  "stderr": "",
+  "test_files": [
+    "tests/test_target_build.py",
+    "tests/test_rag_target.py",
+    "tests/test_sft_target.py",
+    "tests/test_eval_target.py",
+    "tests/test_pretrain_target.py",
+    "tests/test_preference_target.py",
+    "tests/test_target_policy.py",
+    "tests/test_entity_linking.py",
+    "tests/test_target_scoring.py",
+    "tests/test_source_governance.py",
+    "tests/test_transform_extension.py",
+    "tests/test_target_regression_suite.py"
+  ],
+  "results": [
+    {
+      "test_file": "tests/test_target_build.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "......\n----------------------------------------------------------------------\nRan 6 tests in 1.980s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_rag_target.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.286s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_sft_target.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.276s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_eval_target.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.292s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_pretrain_target.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.267s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_preference_target.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.297s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_target_policy.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.574s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_entity_linking.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.282s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_target_scoring.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "..\n----------------------------------------------------------------------\nRan 2 tests in 1.445s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_source_governance.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.581s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_transform_extension.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.000s\n\nOK\n"
+    },
+    {
+      "test_file": "tests/test_target_regression_suite.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+    }
+  ]
+}
