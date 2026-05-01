@@ -194,6 +194,36 @@ class TargetBuildTest(unittest.TestCase):
             self.assertEqual(first_manifest["target_type"], rerun_manifest["target_type"])
             self.assertEqual(first_manifest["target_spec"]["target_type"], rerun_manifest["target_spec"]["target_type"])
 
+    def test_build_target_can_sync_registry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="lattice-target-registry-") as tmp:
+            db_path = Path(tmp) / "registry.db"
+            output_dir = Path(tmp) / "out"
+            cmd = [
+                sys.executable,
+                "-m",
+                "lattice",
+                "build-target",
+                "--input",
+                str(ROOT / "examples" / "materials" / "raw"),
+                "--output",
+                str(output_dir),
+                "--target-spec",
+                str(ROOT / "examples" / "targets" / "rag_corpus.yaml"),
+                "--registry-db",
+                str(db_path),
+            ]
+            subprocess.run(cmd, check=True, capture_output=True, text=True, env=self._env())
+            from lattice.platform.registry import PlatformRegistry
+
+            registry = PlatformRegistry(db_path)
+            try:
+                runs = registry.list_runs()
+                datasets = registry.list_datasets()
+            finally:
+                registry.close()
+            self.assertTrue(any(run["phase"] == "target" for run in runs))
+            self.assertTrue(any(dataset["phase"] == "target" for dataset in datasets))
+
 
 if __name__ == "__main__":
     unittest.main()

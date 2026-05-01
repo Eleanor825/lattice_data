@@ -9,7 +9,7 @@ from lattice.compiler import CompilerConfig, compile_dataset
 from lattice.engines import EngineConfig, engine_check, run_engine_compile
 from lattice.platform import run_workflow_spec, workflow_spec_from_dict
 from lattice.reports import build_phase1_quality_report
-from lattice.platform.sync import sync_phase1_manifest, sync_phase2_manifest
+from lattice.platform.sync import sync_phase1_manifest, sync_phase2_manifest, sync_target_manifest
 from lattice.sources import DemoFetchConfig, SourceFetchConfig, run_demo_fetch, run_source_fetch
 from lattice.targets import BuildTargetConfig, build_target
 from lattice.utils import read_json
@@ -176,6 +176,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--registry",
         default="configs/source_registry.json",
         help="Optional source registry path used for governance metadata.",
+    )
+    target_parser.add_argument(
+        "--registry-db",
+        default="",
+        help="Optional SQLite registry DB path used to sync target builds into the platform registry.",
     )
     target_parser.add_argument(
         "--source",
@@ -397,6 +402,8 @@ def _handle_build_target(args: argparse.Namespace) -> int:
             dataset_name=args.dataset_name,
         )
     )
+    if args.registry_db:
+        sync_target_manifest(args.registry_db, Path(args.output) / "reports" / "manifest.json")
     print(json.dumps(manifest, indent=2, ensure_ascii=False))
     return 0
 
