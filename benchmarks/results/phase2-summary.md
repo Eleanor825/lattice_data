@@ -9,7 +9,7 @@ Status: Fixture-backed phase-2 summary
 - source governance summaries
 - transform extension path
 
-## What Improved Over Phase 1
+## What Changed Relative to the Phase-1 Baseline
 
 - manifests now report entity bundle counts and conflict counts
 - target outputs expose score breakdowns instead of bare scores only
@@ -28,3 +28,7 @@ Status: Fixture-backed phase-2 summary
 - Policy improvement: covered by target-policy and source-governance tests
 - Ecosystem improvement: covered by transform extension guide and tests
 - Trust improvement: covered by entity linking, citation, provenance, and eval tests
+
+Note:
+
+- This summary reflects fixture-backed implementation progress and validation coverage, not benchmarked quality gains over an external baseline.

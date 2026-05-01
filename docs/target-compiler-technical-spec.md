@@ -144,13 +144,11 @@ Required shared fields across all artifacts:
 - `policy`
 - `lineage`
 
-Required artifact types in phase 1:
+Required artifact types in phase 1 design language:
 
 - `Document`
-- `StructuredPropertyRecord`
 - `Entity`
 - `EntityBundle`
-- `EvidenceSpan`
 - `GroundedChunk`
 - `PretrainSpan`
 - `InstructionSample`
@@ -159,7 +157,7 @@ Required artifact types in phase 1:
 
 Implemented:
 
-- yes, with first-version `Artifact` and `EntityBundle` support
+- yes, with a first-version shared `Artifact` type plus target-specific payloads and a separate `EntityBundle` fusion object
 
 ### Phase 2 Requirements
 
@@ -183,8 +181,6 @@ Define a transform interface with:
 - output artifact type
 - supported target types
 - deterministic callable
-- optional score hook
-- optional filter hook
 
 Example conceptual interface:
 
@@ -199,15 +195,14 @@ class Transform:
         ...
 ```
 
-Minimum phase 1 transforms:
+Current implemented transform set:
 
 - `document_to_grounded_chunk`
 - `document_to_pretrain_span`
-- `structured_record_to_instruction`
-- `entity_bundle_to_instruction`
-- `entity_bundle_to_preference_pair`
-- `entity_bundle_to_eval_item`
-- `conflict_bundle_to_eval_item`
+- `record_to_entity`
+- `record_to_instruction_sample`
+- `instruction_sample_to_preference_pair`
+- `record_to_eval_item`
 
 Implemented:
 
@@ -247,12 +242,12 @@ Outputs:
 Planner behavior in phase 1:
 
 - must vary by target type
-- must respect policy presets
+- must cooperate with policy handling in the pipeline
 - must select different packaging for RAG vs pretraining vs SFT
 
 Implemented:
 
-- yes, via a rule-based planner
+- yes, via a rule-based planner keyed primarily by target type and caller-provided source context
 
 ### Phase 2 Requirements
 
@@ -289,7 +284,6 @@ Phase 1 scoring can be heuristic, but must be target-dependent.
 
 - better weighting
 - more domain-sensitive signals
-- explicit reporting of scoring contributions
 
 ### Final State Requirements
 
@@ -314,7 +308,7 @@ Required behaviors:
 
 Implemented:
 
-- yes, in first-version target build policy filtering and manifest reporting
+- yes, in first-version target build policy filtering, source governance reporting, and manifest reporting
 
 ### Phase 2 Requirements
 
@@ -341,7 +335,7 @@ Each target build must emit:
 
 Implemented:
 
-- yes
+- yes, plus `saved_target_spec.json`
 
 Per target:
 
@@ -601,6 +595,10 @@ Current implementation note:
 
 - keep existing fixed-view exports if inexpensive
 - do not let existing fixed views define the new architecture
+
+Current implementation note:
+
+- the old `targets/builders.py` transitional path has been removed to avoid dual ownership inside the target compiler.
 
 ### Phase 2
 

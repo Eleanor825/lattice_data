@@ -180,19 +180,23 @@ A fetchable upstream data provider such as OpenAlex or PubChem.
 
 A normalized intermediate object produced from one or more sources. Artifacts are reusable across targets.
 
-Planned artifact types:
+Current and planned artifact types:
 
 - `Document`
-- `StructuredPropertyRecord`
 - `KnowledgeRecord`
 - `Entity`
 - `EntityBundle`
-- `EvidenceSpan`
 - `GroundedChunk`
 - `PretrainSpan`
 - `InstructionSample`
 - `PreferencePair`
 - `EvalItem`
+
+Notes:
+
+- Current implementation uses a shared `Artifact` type plus target-specific payloads.
+- `EntityBundle` exists as a separate fusion object rather than a first-class transform artifact.
+- `StructuredPropertyRecord` and `EvidenceSpan` remain part of the intended design vocabulary, but are not yet concrete standalone artifact classes in code.
 
 ### 9.3 TargetSpec
 
@@ -252,14 +256,12 @@ Allow users to specify what dataset they want, not only where data should come f
   - `consumer`
   - `license_policy`
   - `quality_objectives`
-- Support optional constraints:
-  - `citation_required`
-  - `commercial_safe`
-  - `token_budget`
-  - `source_allowlist`
-  - `source_denylist`
-  - `max_items`
-  - `min_evidence_confidence`
+- Support optional constraints and target config fields.
+- Current implementation actively enforces only a subset in the target-compiler path:
+  - chunk and span sizing controls
+  - minimum output sizing controls
+  - source fetch query / element / compound / limit parameters
+- Other constraint fields remain reserved product design space rather than implemented enforcement.
 - Support target-specific sections for:
   - RAG-specific chunking and citation config
   - pretraining-specific packing config
@@ -288,7 +290,7 @@ Create a shared data layer used by all targets.
 - Extend the current record model into reusable typed artifacts.
 - Support separate models for source metadata, artifact payload, quality scores, policy state, and lineage.
 - Preserve source-level identifiers and evidence references.
-- Support multi-source artifacts such as `EntityBundle`.
+- Support multi-source fusion objects such as `EntityBundle`.
 - Support artifact serialization to JSONL.
 
 ### Acceptance Criteria
@@ -360,7 +362,7 @@ Link papers, database records, and knowledge artifacts around canonical material
 
 Current implementation status:
 
-- Partially implemented via entity bundles, evidence aggregation, and conflict counting.
+- Partially implemented via entity bundles, evidence aggregation, alias-based linking, and conflict counting. Confidence and condition modeling remain future work.
 
 ## 10.5 FR-E: Transform Registry
 
@@ -375,20 +377,17 @@ Replace hardcoded fixed-output compilation with reusable typed transforms.
   - input artifact types
   - output artifact type
   - supported targets
-  - quality hooks
 - Support one-to-one, one-to-many, and many-to-one transforms.
-- Support transform-level filtering and scoring hooks.
 - Support deterministic execution order within the selected plan.
 
 ### Minimum Phase-One Transforms
 
-- `Document -> GroundedChunk`
-- `Document -> PretrainSpan`
-- `StructuredPropertyRecord -> InstructionSample`
-- `EntityBundle -> InstructionSample`
-- `EntityBundle -> PreferencePair`
-- `EntityBundle -> EvalItem`
-- `ConflictBundle -> EvalItem`
+- `record_to_entity`
+- `document_to_grounded_chunk`
+- `document_to_pretrain_span`
+- `record_to_instruction_sample`
+- `instruction_sample_to_preference_pair`
+- `record_to_eval_item`
 
 ### Acceptance Criteria
 
@@ -408,7 +407,7 @@ Turn a user target into a concrete compilation plan.
 ### Requirements
 
 - Read `TargetSpec`.
-- Select relevant sources.
+- Select relevant sources from the caller-provided source list and registry context.
 - Select required transforms.
 - Select target-aware scoring functions.
 - Select output packaging rules.
@@ -416,7 +415,7 @@ Turn a user target into a concrete compilation plan.
 
 ### Phase-One Planner Behavior
 
-The phase-one planner can be rule-based rather than learned. It should still behave like a planner, not a fixed exporter.
+The phase-one planner is currently rule-based and target-type driven. More advanced source-aware planning and optimization remain phase-two work.
 
 ### Acceptance Criteria
 
@@ -520,9 +519,9 @@ Provide a usable product entry point for developers and early design partners.
 
 - Add a unified CLI entry point such as:
   - `lattice build-target --target-spec path/to/spec.yaml`
-- Add target shortcuts such as:
-  - `lattice build-target --target rag_corpus ...`
-- Expose target compilation via platform API in a future-compatible way.
+- Support optional source-backed target builds through:
+  - `lattice build-target --fetch-sources-first ...`
+- Expose target compilation via platform API.
 - Provide a minimal demo that shows:
   - entity-linked evidence
   - retrieval-ready chunks
@@ -535,7 +534,7 @@ Provide a usable product entry point for developers and early design partners.
 
 Current implementation status:
 
-- Implemented for CLI, and partially implemented for platform API.
+- Implemented for CLI and platform API, including registry sync and rerun support.
 
 ## 11. Target Definitions
 
@@ -565,9 +564,9 @@ Each chunk must include:
 - `source_ref`
 - `entity_ids`
 - `license`
-- `provenance_chain`
+- `lineage`
 - `citation_payload`
-- `retrieval_score`
+- `retrieval_fitness`
 
 ### Behavior Requirements
 
@@ -601,7 +600,11 @@ Build a broad, relatively clean text corpus for domain pretraining or continued 
 - Allow larger span packing than RAG.
 - Down-weight repeated abstracts and boilerplate.
 - Allow broader coverage than RAG.
-- Support source balancing and span packing rules.
+- Support span packing rules.
+
+Current implementation note:
+
+- The current pretraining path exposes `source_balance_hint` but does not yet perform true balancing.
 
 ### Success Metrics
 
@@ -625,13 +628,15 @@ Build high-quality supervised examples for instruction tuning.
 ### Behavior Requirements
 
 - Generate grounded tasks such as:
-  - extraction
   - summarization
-  - grounded QA
-  - comparison
+  - property listing
 - Require sufficient evidence for answers.
 - Preserve provenance in every sample.
-- Support task mixture controls.
+- Support task mixture growth over time.
+
+Current implementation note:
+
+- Current task types are `grounded_summarization` and `property_listing`.
 
 ### Success Metrics
 
@@ -656,10 +661,12 @@ Build weakly supervised chosen/rejected pairs for post-training or answer rankin
 
 - Construct pairs from grounded candidate answers.
 - Support weak supervision rules:
-  - evidence-supported beats unsupported
   - more complete beats less complete
-  - lower conflict beats higher conflict
 - Preserve reason codes for every pair.
+
+Current implementation note:
+
+- Current preference generation is a simple weakly supervised chosen/rejected derivation from instruction samples.
 
 ### Success Metrics
 
@@ -683,9 +690,11 @@ Build trustworthy evaluation assets for retrieval and model assessment.
 
 - Support grounded QA evaluation.
 - Support property extraction evaluation.
-- Support cross-source conflict cases.
-- Support hard negatives for retrieval evaluation.
 - Include gold evidence and rubric fields.
+
+Current implementation note:
+
+- Conflict-aware eval items and hard negatives remain future work.
 
 ### Success Metrics
 
@@ -812,8 +821,8 @@ Build trustworthy evaluation assets for retrieval and model assessment.
 ## 13.1 Primary Flow: Build a RAG Corpus
 
 1. User writes a `TargetSpec` for `rag_corpus`.
-2. User selects a materials query and source allowlist.
-3. Compiler fetches and normalizes data.
+2. User either points at raw input data or enables source-backed fetching first.
+3. Compiler fetches, normalizes, or ingests data as needed.
 4. Compiler links entities and builds evidence-rich chunks.
 5. Compiler scores, filters, and deduplicates.
 6. Compiler writes final outputs plus manifest and dataset card.
@@ -926,7 +935,7 @@ Good-enough:
 2. How strict should the first version of entity canonicalization be?
 3. Should `preference_dataset` remain weakly supervised only in phase one?
 4. How much of the current fixed-view export path should remain for backward compatibility?
-5. Should the first target compiler release expose API submission, or CLI only?
+5. How far should phase-two planning move beyond current rule-based dispatch before risking overdesign?
 
 ## 18. Recommended Implementation Notes
 
