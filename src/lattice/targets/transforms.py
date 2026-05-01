@@ -323,6 +323,7 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
             if not text:
                 continue
             answer = next((segment.strip() for segment in text.split(".") if segment.strip()), text[:200])
+            evidence = text[:300]
             rows.append(
                 Artifact(
                     artifact_id=f"eval-{stable_hash(artifact.artifact_id)}",
@@ -333,12 +334,16 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
                         "eval_type": "grounded_qa",
                         "prompt": f"What is the main contribution of '{title}'?",
                         "gold_answer": answer,
-                        "gold_evidence": text[:300],
+                        "gold_evidence": evidence,
                         "rubric": "Answer should be grounded in the source text and capture the main contribution.",
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={"eval_fitness": _eval_fitness(answer, bool(text))},
+                    quality={
+                        "eval_fitness": _eval_fitness(answer, bool(text)),
+                        "judgeability": 1.0 if answer and evidence else 0.0,
+                        "evidence_coverage": 1.0 if evidence else 0.0,
+                    },
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -347,6 +352,7 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
             entity = str(artifact.payload.get("entity", "")).strip()
             fields = dict(artifact.payload.get("fields", {}))
             for key, value in fields.items():
+                evidence = str(artifact.payload.get("description", ""))
                 rows.append(
                     Artifact(
                         artifact_id=f"eval-{stable_hash(artifact.artifact_id + key)}",
@@ -357,12 +363,16 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
                             "eval_type": "property_extraction",
                             "prompt": f"What is the {key.replace('_', ' ')} of {entity}?",
                             "gold_answer": value,
-                            "gold_evidence": artifact.payload.get("description", ""),
+                            "gold_evidence": evidence,
                             "rubric": "Answer should exactly match the normalized property value.",
                         },
                         source_refs=list(artifact.source_refs),
                         license_status=artifact.license_status,
-                        quality={"eval_fitness": _eval_fitness(str(value), bool(artifact.payload.get('description', '')))},
+                        quality={
+                            "eval_fitness": _eval_fitness(str(value), bool(evidence)),
+                            "judgeability": 1.0 if value else 0.0,
+                            "evidence_coverage": 1.0 if evidence else 0.5,
+                        },
                         policy=dict(artifact.policy),
                         lineage=list(artifact.lineage),
                     )
