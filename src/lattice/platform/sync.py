@@ -208,3 +208,44 @@ def sync_phase2_manifest(db_path: str | Path, manifest_path: str | Path) -> dict
         return {"status": "ok", "run_id": run_id, "backend_id": backend_id}
     finally:
         registry.close()
+
+
+def sync_target_manifest(db_path: str | Path, manifest_path: str | Path) -> dict[str, Any]:
+    payload = read_json(manifest_path)
+    registry = PlatformRegistry(db_path)
+    try:
+        dataset_id = stable_hash(f"target:{payload['target_type']}:{payload['dataset_name']}:{payload['output_dir']}")
+        registry.register_dataset(
+            dataset_id=dataset_id,
+            phase="target",
+            dataset_name=payload["dataset_name"],
+            domain=payload["domain"],
+            manifest_path=str(Path(manifest_path).resolve()),
+            output_dir=payload["output_dir"],
+            generated_at=payload["generated_at"],
+            payload=payload,
+        )
+        run_id = stable_hash(f"target-run:{payload['target_type']}:{payload['dataset_name']}:{payload['output_dir']}")
+        row = registry.conn.execute("SELECT run_id FROM runs WHERE run_id = ?", (run_id,)).fetchone()
+        run_payload = {"manifest": payload, "target_spec": payload.get("target_spec", {})}
+        if row is None:
+            registry.register_run(
+                run_id=run_id,
+                phase="target",
+                workflow=payload["target_type"],
+                engine="target-compiler",
+                model_backend="none",
+                model_family="none",
+                status="completed",
+                domain=payload["domain"],
+                run_name=payload["dataset_name"],
+                input_dir=payload["input_dir"],
+                output_dir=payload["output_dir"],
+                generated_at=payload["generated_at"],
+                payload=run_payload,
+            )
+        else:
+            registry.update_run_status(run_id, "completed", payload=run_payload)
+        return {"status": "ok", "run_id": run_id, "dataset_id": dataset_id}
+    finally:
+        registry.close()

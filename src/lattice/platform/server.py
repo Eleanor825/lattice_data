@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException
+from pathlib import Path
 from pydantic import BaseModel
 
-from lattice.platform.jobs import rerun_job, submit_phase1_job, submit_phase2_job
 from lattice.platform.registry import PlatformRegistry
+from lattice.platform.sync import sync_target_manifest
+from lattice.targets import BuildTargetConfig, build_target
 
 
 class RunStatusUpdate(BaseModel):
@@ -46,6 +48,15 @@ class Phase2SubmitRequest(BaseModel):
     hidden_size: int = 96
 
 
+class TargetBuildRequest(BaseModel):
+    input_dir: str
+    output_dir: str
+    target_spec_path: str
+    source_names: list[str] = []
+    registry_path: str = "configs/source_registry.json"
+    dataset_name: str = ""
+
+
 def create_app(db_path: str) -> FastAPI:
     registry = PlatformRegistry(db_path)
     app = FastAPI(title="Lattice Platform API", version="0.1.0")
@@ -79,6 +90,7 @@ def create_app(db_path: str) -> FastAPI:
 
     @app.post("/phase1-runs")
     def submit_phase1(payload: Phase1SubmitRequest) -> dict[str, object]:
+        from lattice.platform.jobs import submit_phase1_job
         from lattice.workflows import Phase1Config
 
         config = Phase1Config(
@@ -98,6 +110,7 @@ def create_app(db_path: str) -> FastAPI:
 
     @app.post("/phase2-runs")
     def submit_phase2(payload: Phase2SubmitRequest) -> dict[str, object]:
+        from lattice.platform.jobs import submit_phase2_job
         from lattice.phase2 import Phase2Config
 
         config = Phase2Config(
@@ -124,8 +137,24 @@ def create_app(db_path: str) -> FastAPI:
         )
         return submit_phase2_job(config)
 
+    @app.post("/target-builds")
+    def submit_target_build(payload: TargetBuildRequest) -> dict[str, object]:
+        manifest = build_target(
+            BuildTargetConfig(
+                input_dir=payload.input_dir,
+                output_dir=payload.output_dir,
+                target_spec_path=payload.target_spec_path,
+                source_names=payload.source_names,
+                registry_path=payload.registry_path,
+                dataset_name=payload.dataset_name,
+            )
+        )
+        sync_target_manifest(db_path, Path(payload.output_dir) / "reports" / "manifest.json")
+        return manifest
+
     @app.post("/runs/{run_id}/rerun")
     def rerun(run_id: str) -> dict[str, object]:
+        from lattice.platform.jobs import rerun_job
         try:
             return rerun_job(db_path, run_id)
         except KeyError:

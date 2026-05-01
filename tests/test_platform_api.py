@@ -131,6 +131,35 @@ class PlatformApiTest(unittest.TestCase):
             self.assertEqual(rerun_row["status"], "completed")
             self.assertEqual(rerun_row["payload"]["retry_parent_run_id"], phase2_run_id)
 
+    def test_platform_api_target_build_endpoint(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="lattice-api-target-") as tmp:
+            db_path = Path(tmp) / "registry.db"
+            app = create_app(str(db_path))
+            client = TestClient(app)
+
+            response = client.post(
+                "/target-builds",
+                json={
+                    "input_dir": str(ROOT / "examples" / "materials" / "raw"),
+                    "output_dir": str(Path(tmp) / "target-out"),
+                    "target_spec_path": str(ROOT / "examples" / "targets" / "rag_corpus.yaml"),
+                    "source_names": ["openalex", "pubchem"],
+                    "registry_path": str(ROOT / "configs" / "source_registry.json"),
+                    "dataset_name": "api-target-rag",
+                },
+            )
+            self.assertEqual(response.status_code, 200)
+            payload = response.json()
+            self.assertEqual(payload["target_type"], "rag_corpus")
+
+            runs = client.get("/runs")
+            self.assertEqual(runs.status_code, 200)
+            self.assertTrue(any(run["phase"] == "target" for run in runs.json()))
+
+            datasets = client.get("/datasets")
+            self.assertEqual(datasets.status_code, 200)
+            self.assertTrue(any(item["phase"] == "target" for item in datasets.json()))
+
 
 if __name__ == "__main__":
     unittest.main()
