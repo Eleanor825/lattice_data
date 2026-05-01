@@ -48,6 +48,7 @@ class AdditionalSourceTest(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["schema_type"], "StructuredRecord")
         self.assertEqual(rows[0]["source_type"], "jarvis")
+        self.assertIn("band_gap", rows[0]["payload"]["fields"])
 
     def test_europe_pmc_fetch_returns_documents(self) -> None:
         rows = fetch_europe_pmc_documents("solid state battery electrolyte", limit=1, domain="materials")
