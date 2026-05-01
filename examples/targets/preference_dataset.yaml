@@ -1,0 +1,9 @@
+target_type: preference_dataset
+domain: materials
+consumer: materials_preference_demo
+license_policy: research_only
+quality_objectives:
+  - grounded
+  - preference_ready
+constraints: {}
+target_config: {}

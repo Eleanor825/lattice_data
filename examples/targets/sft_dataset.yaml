@@ -1,0 +1,9 @@
+target_type: sft_dataset
+domain: materials
+consumer: materials_sft_demo
+license_policy: research_only
+quality_objectives:
+  - grounded
+  - answerable
+constraints: {}
+target_config: {}

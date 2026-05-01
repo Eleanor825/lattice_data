@@ -1,0 +1,11 @@
+target_type: rag_corpus
+domain: materials
+consumer: materials_rag_demo
+license_policy: research_only
+quality_objectives:
+  - grounded
+  - retrieval_ready
+constraints:
+  chunk_size: 500
+target_config:
+  chunk_size: 500

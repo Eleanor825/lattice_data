@@ -18,3 +18,12 @@ When compiled, the sample corpus should:
 - keep two `StructuredRecord` records
 - export all four dataset views
 
+## Target Compiler Examples
+
+Target spec examples for the phase-1 target compiler live under:
+
+- [`../targets/rag_corpus.yaml`](/Users/huanzhang/lattice/examples/targets/rag_corpus.yaml)
+- [`../targets/pretrain_corpus.yaml`](/Users/huanzhang/lattice/examples/targets/pretrain_corpus.yaml)
+- [`../targets/sft_dataset.yaml`](/Users/huanzhang/lattice/examples/targets/sft_dataset.yaml)
+- [`../targets/preference_dataset.yaml`](/Users/huanzhang/lattice/examples/targets/preference_dataset.yaml)
+- [`../targets/eval_dataset.yaml`](/Users/huanzhang/lattice/examples/targets/eval_dataset.yaml)

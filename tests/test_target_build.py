@@ -8,6 +8,8 @@ import tempfile
 from pathlib import Path
 import unittest
 
+from lattice.targets import load_target_spec, target_spec_from_dict
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -37,6 +39,44 @@ class TargetBuildTest(unittest.TestCase):
             + "\n",
             encoding="utf-8",
         )
+
+    def test_target_spec_examples_load(self) -> None:
+        examples_dir = ROOT / "examples" / "targets"
+        for spec_name in (
+            "rag_corpus.yaml",
+            "pretrain_corpus.yaml",
+            "sft_dataset.yaml",
+            "preference_dataset.yaml",
+            "eval_dataset.yaml",
+        ):
+            spec = load_target_spec(examples_dir / spec_name)
+            self.assertTrue(spec.target_type)
+            self.assertEqual(spec.domain, "materials")
+
+    def test_target_spec_validation(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Unsupported target_type"):
+            target_spec_from_dict({"target_type": "bad_target", "domain": "materials"})
+
+        with self.assertRaisesRegex(ValueError, "field 'domain' is required"):
+            target_spec_from_dict({"target_type": "rag_corpus"})
+
+        with self.assertRaisesRegex(ValueError, "Unsupported license_policy"):
+            target_spec_from_dict(
+                {
+                    "target_type": "rag_corpus",
+                    "domain": "materials",
+                    "license_policy": "bad_policy",
+                }
+            )
+
+        with self.assertRaisesRegex(ValueError, "target_config.chunk_size"):
+            target_spec_from_dict(
+                {
+                    "target_type": "rag_corpus",
+                    "domain": "materials",
+                    "target_config": {"chunk_size": 0},
+                }
+            )
 
     def test_build_target_rag(self) -> None:
         with tempfile.TemporaryDirectory(prefix="lattice-target-rag-") as tmp:

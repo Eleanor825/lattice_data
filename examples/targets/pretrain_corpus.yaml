@@ -1,0 +1,11 @@
+target_type: pretrain_corpus
+domain: materials
+consumer: materials_pretrain_demo
+license_policy: research_only
+quality_objectives:
+  - broad_coverage
+  - low_boilerplate
+constraints:
+  chunk_size: 1200
+target_config:
+  chunk_size: 1200

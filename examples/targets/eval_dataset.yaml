@@ -1,0 +1,9 @@
+target_type: eval_dataset
+domain: materials
+consumer: materials_eval_demo
+license_policy: research_only
+quality_objectives:
+  - judgeable
+  - grounded
+constraints: {}
+target_config: {}
