@@ -33,6 +33,20 @@ def compute_quality(record: Record) -> dict[str, float | int | bool | str]:
     return quality
 
 
+def retrieval_fitness(
+    *,
+    text: str,
+    entity_count: int,
+    has_title: bool,
+    has_citation: bool,
+) -> float:
+    title_bonus = 0.15 if has_title else 0.0
+    entity_bonus = min(0.3, 0.1 * entity_count)
+    citation_bonus = 0.15 if has_citation else 0.0
+    length_bonus = min(0.4, len(text.split()) / 200.0)
+    return round(title_bonus + entity_bonus + citation_bonus + length_bonus, 4)
+
+
 def filter_records(records: list[Record]) -> tuple[list[Record], Counter[str]]:
     kept: list[Record] = []
     dropped: Counter[str] = Counter()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
+from lattice.compiler.quality import retrieval_fitness
 from lattice.models import Record
 from lattice.targets.artifacts import Artifact
 from lattice.targets.specs import TargetSpec
@@ -112,12 +113,14 @@ def entity_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifact]
 
 def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifact]:
     chunk_size = int(spec.target_config.get("chunk_size", spec.constraints.get("chunk_size", 1200)))
+    min_chunk_words = int(spec.target_config.get("min_chunk_words", spec.constraints.get("min_chunk_words", 20)))
     entity_artifacts = [artifact for artifact in inputs if artifact.artifact_type == "Entity"]
     entity_aliases = {
         artifact.payload["entity_id"]: list(artifact.payload.get("aliases", []))
         for artifact in entity_artifacts
     }
     rows: list[Artifact] = []
+    seen_chunk_hashes: set[str] = set()
     for artifact in inputs:
         if artifact.artifact_type != "Document":
             continue
@@ -132,6 +135,19 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
                 matched_entities.append(entity_id)
         for index, chunk in enumerate(chunk_text(text, max_chars=chunk_size), start=1):
             normalized = normalize_whitespace(chunk)
+            if len(normalized.split()) < min_chunk_words:
+                continue
+            chunk_hash = stable_hash(normalized.lower())
+            if chunk_hash in seen_chunk_hashes:
+                continue
+            seen_chunk_hashes.add(chunk_hash)
+            source_ref = artifact.source_refs[0]
+            citation_payload = {
+                "title": title,
+                "source_ref": source_ref["source_ref"],
+                "source_type": source_ref["source_type"],
+                "source_id": source_ref["source_id"],
+            }
             rows.append(
                 Artifact(
                     artifact_id=f"chunk-{stable_hash(artifact.artifact_id + str(index))}",
@@ -143,15 +159,19 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
                         "title": title,
                         "section": "body",
                         "entity_ids": matched_entities,
-                        "citation_payload": {
-                            "title": title,
-                            "source_ref": artifact.source_refs[0]["source_ref"],
-                            "source_type": artifact.source_refs[0]["source_type"],
-                        },
+                        "citation_payload": citation_payload,
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={"retrieval_fitness": _retrieval_fitness(normalized, matched_entities, bool(title))},
+                    quality={
+                        "retrieval_fitness": retrieval_fitness(
+                            text=normalized,
+                            entity_count=len(matched_entities),
+                            has_title=bool(title),
+                            has_citation=bool(source_ref["source_ref"]),
+                        ),
+                        "citation_completeness": 1.0 if source_ref["source_ref"] and source_ref["source_type"] else 0.0,
+                    },
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -388,13 +408,6 @@ def register_default_transforms() -> dict[str, Transform]:
         ),
     ]
     return {transform.name: transform for transform in transforms}
-
-
-def _retrieval_fitness(text: str, entity_ids: list[str], has_title: bool) -> float:
-    title_bonus = 0.15 if has_title else 0.0
-    entity_bonus = min(0.3, 0.1 * len(entity_ids))
-    length_bonus = min(0.4, len(text.split()) / 200.0)
-    return round(title_bonus + entity_bonus + length_bonus, 4)
 
 
 def _pretrain_fitness(text: str) -> float:
