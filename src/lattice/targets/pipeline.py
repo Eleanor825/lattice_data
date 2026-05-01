@@ -200,5 +200,15 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
         "warnings": warnings,
     }
     write_json(reports_dir / "manifest.json", manifest)
+    write_json(reports_dir / "saved_target_spec.json", spec.to_dict())
+    write_json(
+        reports_dir / "quality_summary.json",
+        {
+            "target_type": spec.target_type,
+            "output_counts": output_counts,
+            "dropped_records": dict(dropped + policy_dropped),
+            "warnings": warnings,
+        },
+    )
     (reports_dir / "dataset_card.md").write_text(_dataset_card(manifest), encoding="utf-8")
     return manifest

@@ -154,6 +154,46 @@ class TargetBuildTest(unittest.TestCase):
             self.assertGreater(sft_manifest["output_counts"]["instruction_samples"], 0)
             self.assertGreater(eval_manifest["output_counts"]["eval_items"], 0)
 
+    def test_rebuild_from_saved_spec(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="lattice-target-rerun-") as tmp:
+            output_dir = Path(tmp) / "out"
+            rerun_dir = Path(tmp) / "rerun"
+            spec_path = ROOT / "examples" / "targets" / "rag_corpus.yaml"
+            cmd = [
+                sys.executable,
+                "-m",
+                "lattice",
+                "build-target",
+                "--input",
+                str(ROOT / "examples" / "materials" / "raw"),
+                "--output",
+                str(output_dir),
+                "--target-spec",
+                str(spec_path),
+            ]
+            first_result = subprocess.run(cmd, check=True, capture_output=True, text=True, env=self._env())
+            first_manifest = json.loads(first_result.stdout)
+
+            saved_spec = Path(output_dir) / "reports" / "saved_target_spec.json"
+            self.assertTrue(saved_spec.exists())
+
+            rerun_cmd = [
+                sys.executable,
+                "-m",
+                "lattice",
+                "build-target",
+                "--input",
+                str(ROOT / "examples" / "materials" / "raw"),
+                "--output",
+                str(rerun_dir),
+                "--target-spec",
+                str(saved_spec),
+            ]
+            rerun_result = subprocess.run(rerun_cmd, check=True, capture_output=True, text=True, env=self._env())
+            rerun_manifest = json.loads(rerun_result.stdout)
+            self.assertEqual(first_manifest["target_type"], rerun_manifest["target_type"])
+            self.assertEqual(first_manifest["target_spec"]["target_type"], rerun_manifest["target_spec"]["target_type"])
+
 
 if __name__ == "__main__":
     unittest.main()
