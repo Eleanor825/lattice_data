@@ -56,6 +56,37 @@ class EvalTargetTest(unittest.TestCase):
             self.assertEqual(manifest["target_type"], "eval_dataset")
             self.assertGreater(manifest["output_counts"]["eval_items"], 0)
 
+    def test_wikidata_can_compile_into_eval_target(self) -> None:
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(ROOT / "src")
+        with tempfile.TemporaryDirectory(prefix="lattice-wikidata-eval-") as tmp:
+            output_dir = Path(tmp) / "out"
+            cmd = [
+                sys.executable,
+                "-m",
+                "lattice",
+                "build-target",
+                "--input",
+                str(ROOT / "examples" / "materials" / "raw"),
+                "--output",
+                str(output_dir),
+                "--target-spec",
+                str(ROOT / "examples" / "targets" / "eval_dataset.yaml"),
+                "--fetch-sources-first",
+                "--registry",
+                str(ROOT / "configs" / "source_registry.json"),
+                "--source",
+                "wikidata",
+                "--compound",
+                "lithium iron phosphate",
+                "--limit",
+                "1",
+            ]
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True, env=env)
+            manifest = json.loads(result.stdout)
+            self.assertGreaterEqual(manifest["fetch"]["counts"].get("wikidata", 0), 1)
+            self.assertGreaterEqual(manifest["output_counts"]["eval_items"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

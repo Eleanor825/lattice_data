@@ -414,6 +414,40 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
                         lineage=list(artifact.lineage),
                     )
                 )
+        elif artifact.artifact_type == "KnowledgeRecord":
+            subject = str(artifact.payload.get("subject", "")).strip()
+            predicate = str(artifact.payload.get("predicate", "")).strip()
+            obj = str(artifact.payload.get("object", "")).strip()
+            evidence = str(artifact.payload.get("evidence", "")).strip()
+            if not subject or not obj:
+                continue
+            rows.append(
+                Artifact(
+                    artifact_id=f"eval-{stable_hash(artifact.artifact_id)}",
+                    artifact_type="EvalItem",
+                    domain=artifact.domain,
+                    payload={
+                        "eval_id": f"eval-{stable_hash(artifact.artifact_id)}",
+                        "eval_type": "knowledge_grounding",
+                        "prompt": f"What is known about {subject}?",
+                        "gold_answer": f"{subject} {predicate} {obj}".strip(),
+                        "gold_evidence": evidence or obj,
+                        "rubric": "Answer should preserve the grounded knowledge statement and remain faithful to the source fact.",
+                    },
+                    source_refs=list(artifact.source_refs),
+                    license_status=artifact.license_status,
+                    quality=_with_score_breakdown(
+                        score_name="eval_fitness",
+                        breakdown=_eval_fitness(obj, bool(evidence or obj)),
+                        extra={
+                            "judgeability": 1.0,
+                            "evidence_coverage": 1.0 if (evidence or obj) else 0.0,
+                        },
+                    ),
+                    policy=dict(artifact.policy),
+                    lineage=list(artifact.lineage),
+                )
+            )
     return rows
 
 
