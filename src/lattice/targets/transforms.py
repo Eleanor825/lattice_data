@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable
 
-from lattice.compiler.quality import retrieval_fitness
+from lattice.compiler.quality import retrieval_fitness_breakdown
 from lattice.models import Record
 from lattice.targets.artifacts import Artifact
 from lattice.targets.specs import TargetSpec
@@ -163,15 +163,16 @@ def grounded_chunk_transform(inputs: list[Artifact], spec: TargetSpec) -> list[A
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={
-                        "retrieval_fitness": retrieval_fitness(
+                    quality=_with_score_breakdown(
+                        score_name="retrieval_fitness",
+                        breakdown=retrieval_fitness_breakdown(
                             text=normalized,
                             entity_count=len(matched_entities),
                             has_title=bool(title),
                             has_citation=bool(source_ref["source_ref"]),
                         ),
-                        "citation_completeness": 1.0 if source_ref["source_ref"] and source_ref["source_type"] else 0.0,
-                    },
+                        extra={"citation_completeness": 1.0 if source_ref["source_ref"] and source_ref["source_type"] else 0.0},
+                    ),
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -205,10 +206,11 @@ def pretrain_span_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Ar
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={
-                        "pretrain_fitness": _pretrain_fitness(normalized),
-                        "source_balance_hint": artifact.source_refs[0].get("source_type", ""),
-                    },
+                    quality=_with_score_breakdown(
+                        score_name="pretrain_fitness",
+                        breakdown=_pretrain_fitness(normalized),
+                        extra={"source_balance_hint": artifact.source_refs[0].get("source_type", "")},
+                    ),
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -242,10 +244,11 @@ def instruction_sample_transform(inputs: list[Artifact], spec: TargetSpec) -> li
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={
-                        "sft_fitness": _sft_fitness(output, bool(evidence)),
-                        "evidence_completeness": 1.0 if evidence else 0.0,
-                    },
+                    quality=_with_score_breakdown(
+                        score_name="sft_fitness",
+                        breakdown=_sft_fitness(output, bool(evidence)),
+                        extra={"evidence_completeness": 1.0 if evidence else 0.0},
+                    ),
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -272,10 +275,11 @@ def instruction_sample_transform(inputs: list[Artifact], spec: TargetSpec) -> li
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={
-                        "sft_fitness": _sft_fitness(output, bool(evidence)),
-                        "evidence_completeness": 1.0 if evidence else 0.5,
-                    },
+                    quality=_with_score_breakdown(
+                        score_name="sft_fitness",
+                        breakdown=_sft_fitness(output, bool(evidence)),
+                        extra={"evidence_completeness": 1.0 if evidence else 0.5},
+                    ),
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -311,10 +315,14 @@ def preference_pair_transform(inputs: list[Artifact], spec: TargetSpec) -> list[
                 },
                 source_refs=list(artifact.source_refs),
                 license_status=artifact.license_status,
-                quality={
-                    "preference_fitness": artifact.quality.get("sft_fitness", 0.0),
-                    "pair_validity": 1.0 if output and rejected and output != rejected else 0.0,
-                },
+                quality=_with_score_breakdown(
+                    score_name="preference_fitness",
+                    breakdown={
+                        "score": round(float(artifact.quality.get("sft_fitness", 0.0)), 4),
+                        "source_sft_score": round(float(artifact.quality.get("sft_fitness", 0.0)), 4),
+                    },
+                    extra={"pair_validity": 1.0 if output and rejected and output != rejected else 0.0},
+                ),
                 policy=dict(artifact.policy),
                 lineage=list(artifact.lineage),
             )
@@ -348,11 +356,14 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={
-                        "eval_fitness": _eval_fitness(answer, bool(text)),
-                        "judgeability": 1.0 if answer and evidence else 0.0,
-                        "evidence_coverage": 1.0 if evidence else 0.0,
-                    },
+                    quality=_with_score_breakdown(
+                        score_name="eval_fitness",
+                        breakdown=_eval_fitness(answer, bool(text)),
+                        extra={
+                            "judgeability": 1.0 if answer and evidence else 0.0,
+                            "evidence_coverage": 1.0 if evidence else 0.0,
+                        },
+                    ),
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -377,11 +388,14 @@ def eval_item_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifa
                         },
                         source_refs=list(artifact.source_refs),
                         license_status=artifact.license_status,
-                        quality={
-                            "eval_fitness": _eval_fitness(str(value), bool(evidence)),
-                            "judgeability": 1.0 if value else 0.0,
-                            "evidence_coverage": 1.0 if evidence else 0.5,
-                        },
+                        quality=_with_score_breakdown(
+                            score_name="eval_fitness",
+                            breakdown=_eval_fitness(str(value), bool(evidence)),
+                            extra={
+                                "judgeability": 1.0 if value else 0.0,
+                                "evidence_coverage": 1.0 if evidence else 0.5,
+                            },
+                        ),
                         policy=dict(artifact.policy),
                         lineage=list(artifact.lineage),
                     )
@@ -437,19 +451,46 @@ def register_default_transforms() -> dict[str, Transform]:
     return {transform.name: transform for transform in transforms}
 
 
-def _pretrain_fitness(text: str) -> float:
+def _with_score_breakdown(*, score_name: str, breakdown: dict[str, float], extra: dict[str, object] | None = None) -> dict[str, object]:
+    payload: dict[str, object] = {
+        score_name: breakdown["score"],
+        f"{score_name}_breakdown": breakdown,
+    }
+    if extra:
+        payload.update(extra)
+    return payload
+
+
+def _pretrain_fitness(text: str) -> dict[str, float]:
     unique_words = len(set(text.lower().split()))
     total_words = max(len(text.split()), 1)
-    return round(min(1.0, unique_words / total_words + min(total_words / 300.0, 0.5)), 4)
+    unique_ratio = unique_words / total_words
+    length_bonus = min(total_words / 300.0, 0.5)
+    score = round(min(1.0, unique_ratio + length_bonus), 4)
+    return {
+        "score": score,
+        "unique_ratio": round(unique_ratio, 4),
+        "length_bonus": round(length_bonus, 4),
+    }
 
 
-def _sft_fitness(output: str, has_evidence: bool) -> float:
+def _sft_fitness(output: str, has_evidence: bool) -> dict[str, float]:
     evidence_bonus = 0.2 if has_evidence else 0.0
     completeness = min(0.6, len(output.split()) / 80.0)
-    return round(evidence_bonus + completeness, 4)
+    score = round(evidence_bonus + completeness, 4)
+    return {
+        "score": score,
+        "evidence_bonus": round(evidence_bonus, 4),
+        "completeness": round(completeness, 4),
+    }
 
 
-def _eval_fitness(answer: str, has_evidence: bool) -> float:
+def _eval_fitness(answer: str, has_evidence: bool) -> dict[str, float]:
     evidence_bonus = 0.25 if has_evidence else 0.0
     answer_bonus = min(0.5, len(str(answer).split()) / 50.0)
-    return round(evidence_bonus + answer_bonus, 4)
+    score = round(evidence_bonus + answer_bonus, 4)
+    return {
+        "score": score,
+        "evidence_bonus": round(evidence_bonus, 4),
+        "answer_bonus": round(answer_bonus, 4),
+    }

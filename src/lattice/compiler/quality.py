@@ -47,6 +47,27 @@ def retrieval_fitness(
     return round(title_bonus + entity_bonus + citation_bonus + length_bonus, 4)
 
 
+def retrieval_fitness_breakdown(
+    *,
+    text: str,
+    entity_count: int,
+    has_title: bool,
+    has_citation: bool,
+) -> dict[str, float]:
+    title_bonus = 0.15 if has_title else 0.0
+    entity_bonus = min(0.3, 0.1 * entity_count)
+    citation_bonus = 0.15 if has_citation else 0.0
+    length_bonus = min(0.4, len(text.split()) / 200.0)
+    score = round(title_bonus + entity_bonus + citation_bonus + length_bonus, 4)
+    return {
+        "score": score,
+        "title_bonus": round(title_bonus, 4),
+        "entity_bonus": round(entity_bonus, 4),
+        "citation_bonus": round(citation_bonus, 4),
+        "length_bonus": round(length_bonus, 4),
+    }
+
+
 def filter_records(records: list[Record]) -> tuple[list[Record], Counter[str]]:
     kept: list[Record] = []
     dropped: Counter[str] = Counter()
