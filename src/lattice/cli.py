@@ -11,7 +11,7 @@ from lattice.platform import run_workflow_spec, workflow_spec_from_dict
 from lattice.reports import build_phase1_quality_report
 from lattice.platform.sync import sync_phase1_manifest, sync_phase2_manifest, sync_target_manifest
 from lattice.sources import DemoFetchConfig, SourceFetchConfig, run_demo_fetch, run_source_fetch
-from lattice.targets import BuildTargetConfig, build_target
+from lattice.targets import BuildTargetConfig, build_target, build_target_from_sources
 from lattice.utils import read_json
 from lattice.workflows import Phase1Config, run_phase1_pipeline
 
@@ -187,6 +187,15 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help="Optional source labels used for plan metadata. Can be repeated.",
+    )
+    target_parser.add_argument("--query", default="solid state battery electrolyte", help="Topic query for source-backed target builds.")
+    target_parser.add_argument("--element", action="append", default=[], help="Element symbol for source-backed target builds. Can be repeated.")
+    target_parser.add_argument("--compound", action="append", default=[], help="Compound name for source-backed target builds. Can be repeated.")
+    target_parser.add_argument("--limit", type=int, default=3, help="Maximum rows per source for source-backed target builds.")
+    target_parser.add_argument(
+        "--fetch-sources-first",
+        action="store_true",
+        help="Fetch selected source-registry connectors into a raw snapshot before compiling the target.",
     )
 
     for workflow_name in ("train-pretrain", "train-continue", "train-finetune", "train-post"):
@@ -392,16 +401,19 @@ def _handle_phase1_report(args: argparse.Namespace) -> int:
 
 
 def _handle_build_target(args: argparse.Namespace) -> int:
-    manifest = build_target(
-        BuildTargetConfig(
-            input_dir=args.input,
-            output_dir=args.output,
-            target_spec_path=args.target_spec,
-            source_names=args.source,
-            registry_path=args.registry,
-            dataset_name=args.dataset_name,
-        )
+    config = BuildTargetConfig(
+        input_dir=args.input,
+        output_dir=args.output,
+        target_spec_path=args.target_spec,
+        source_names=args.source,
+        registry_path=args.registry,
+        dataset_name=args.dataset_name,
+        query=args.query,
+        elements=args.element,
+        compounds=args.compound,
+        limit=args.limit,
     )
+    manifest = build_target_from_sources(config) if args.fetch_sources_first else build_target(config)
     if args.registry_db:
         sync_target_manifest(args.registry_db, Path(args.output) / "reports" / "manifest.json")
     print(json.dumps(manifest, indent=2, ensure_ascii=False))

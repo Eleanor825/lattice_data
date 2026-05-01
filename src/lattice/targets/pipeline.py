@@ -9,6 +9,7 @@ from lattice.compiler.quality import filter_records
 from lattice.ingest import ingest_directory
 from lattice.models import Record
 from lattice.sources.common import timestamp_now
+from lattice.sources.fetchers import SourceFetchConfig, run_source_fetch
 from lattice.sources.registry import registry_source_map
 from lattice.targets.artifacts import Artifact
 from lattice.targets.fusion import build_entity_bundles
@@ -26,6 +27,10 @@ class BuildTargetConfig:
     source_names: list[str]
     registry_path: str = "configs/source_registry.json"
     dataset_name: str = ""
+    query: str = "solid state battery electrolyte"
+    elements: list[str] | None = None
+    compounds: list[str] | None = None
+    limit: int = 3
 
 
 def _dataset_name(config: BuildTargetConfig, spec: TargetSpec) -> str:
@@ -273,4 +278,38 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
         },
     )
     (reports_dir / "dataset_card.md").write_text(_dataset_card(manifest), encoding="utf-8")
+    return manifest
+
+
+def build_target_from_sources(config: BuildTargetConfig) -> dict[str, Any]:
+    spec = load_target_spec(config.target_spec_path)
+    raw_dir = ensure_dir(Path(config.output_dir) / "raw")
+    fetch_manifest = run_source_fetch(
+        SourceFetchConfig(
+            output_dir=str(raw_dir),
+            domain=spec.domain,
+            registry_path=config.registry_path,
+            sources=config.source_names,
+            query=config.query,
+            elements=config.elements or ["Li", "O"],
+            compounds=config.compounds or ["lithium iron phosphate", "lithium cobalt oxide"],
+            limit=config.limit,
+        )
+    )
+    manifest = build_target(
+        BuildTargetConfig(
+            input_dir=str(raw_dir),
+            output_dir=config.output_dir,
+            target_spec_path=config.target_spec_path,
+            source_names=config.source_names,
+            registry_path=config.registry_path,
+            dataset_name=config.dataset_name,
+            query=config.query,
+            elements=config.elements,
+            compounds=config.compounds,
+            limit=config.limit,
+        )
+    )
+    manifest["fetch"] = fetch_manifest
+    write_json(Path(config.output_dir) / "reports" / "manifest.json", manifest)
     return manifest

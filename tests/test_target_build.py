@@ -224,6 +224,38 @@ class TargetBuildTest(unittest.TestCase):
             self.assertTrue(any(run["phase"] == "target" for run in runs))
             self.assertTrue(any(dataset["phase"] == "target" for dataset in datasets))
 
+    def test_build_target_can_fetch_sources_first(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="lattice-target-fetch-") as tmp:
+            output_dir = Path(tmp) / "out"
+            cmd = [
+                sys.executable,
+                "-m",
+                "lattice",
+                "build-target",
+                "--input",
+                str(ROOT / "examples" / "materials" / "raw"),
+                "--output",
+                str(output_dir),
+                "--target-spec",
+                str(ROOT / "examples" / "targets" / "rag_corpus.yaml"),
+                "--fetch-sources-first",
+                "--registry",
+                str(ROOT / "configs" / "source_registry.json"),
+                "--source",
+                "openalex",
+                "--source",
+                "pubchem",
+                "--compound",
+                "lithium iron phosphate",
+                "--limit",
+                "1",
+            ]
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True, env=self._env())
+            manifest = json.loads(result.stdout)
+            self.assertIn("fetch", manifest)
+            self.assertIn("counts", manifest["fetch"])
+            self.assertTrue((output_dir / "raw").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

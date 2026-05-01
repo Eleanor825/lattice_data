@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from lattice.platform.registry import PlatformRegistry
 from lattice.platform.sync import sync_target_manifest
-from lattice.targets import BuildTargetConfig, build_target
+from lattice.targets import BuildTargetConfig, build_target, build_target_from_sources
 
 
 class RunStatusUpdate(BaseModel):
@@ -55,6 +55,11 @@ class TargetBuildRequest(BaseModel):
     source_names: list[str] = []
     registry_path: str = "configs/source_registry.json"
     dataset_name: str = ""
+    query: str = "solid state battery electrolyte"
+    elements: list[str] = []
+    compounds: list[str] = []
+    limit: int = 3
+    fetch_sources_first: bool = False
 
 
 def create_app(db_path: str) -> FastAPI:
@@ -139,16 +144,19 @@ def create_app(db_path: str) -> FastAPI:
 
     @app.post("/target-builds")
     def submit_target_build(payload: TargetBuildRequest) -> dict[str, object]:
-        manifest = build_target(
-            BuildTargetConfig(
-                input_dir=payload.input_dir,
-                output_dir=payload.output_dir,
-                target_spec_path=payload.target_spec_path,
-                source_names=payload.source_names,
-                registry_path=payload.registry_path,
-                dataset_name=payload.dataset_name,
-            )
+        config = BuildTargetConfig(
+            input_dir=payload.input_dir,
+            output_dir=payload.output_dir,
+            target_spec_path=payload.target_spec_path,
+            source_names=payload.source_names,
+            registry_path=payload.registry_path,
+            dataset_name=payload.dataset_name,
+            query=payload.query,
+            elements=payload.elements,
+            compounds=payload.compounds,
+            limit=payload.limit,
         )
+        manifest = build_target_from_sources(config) if payload.fetch_sources_first else build_target(config)
         sync_target_manifest(db_path, Path(payload.output_dir) / "reports" / "manifest.json")
         return manifest
 
