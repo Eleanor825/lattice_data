@@ -19,7 +19,14 @@ def fetch_europe_pmc_documents(query: str, limit: int, domain: str) -> list[dict
         pmcid = item.get("pmcid", "")
         doi = item.get("doi", "")
         source_id = f"europe-pmc-{slugify(pmcid or doi or title)}"
-        body_parts = [part for part in [abstract, f"Journal: {item.get('journalTitle', '')}", f"Year: {item.get('pubYear', '')}", f"DOI: {doi}" if doi else ""] if part]
+        body_parts = [
+            title,
+            abstract,
+            f"Journal: {item.get('journalTitle', '')}",
+            f"Year: {item.get('pubYear', '')}",
+            f"DOI: {doi}" if doi else "",
+        ]
+        body_parts = [part for part in body_parts if part]
         rows.append(
             {
                 "schema_type": "Document",
@@ -40,4 +47,3 @@ def fetch_europe_pmc_documents(query: str, limit: int, domain: str) -> list[dict
             }
         )
     return rows
-

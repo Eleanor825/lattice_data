@@ -44,6 +44,7 @@ class AdditionalSourceTest(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["schema_type"], "Document")
         self.assertEqual(rows[0]["source_type"], "europe_pmc")
+        self.assertGreaterEqual(len(rows[0]["payload"]["text"].split()), 10)
 
     def test_arxiv_fetch_returns_documents(self) -> None:
         from lattice.sources.arxiv import fetch_arxiv_documents
