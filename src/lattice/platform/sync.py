@@ -21,6 +21,10 @@ def phase2_run_id(run_name: str, workflow: str, output_dir: str | Path) -> str:
     return stable_hash(f"phase2:{run_name}:{workflow}:{_normalize_path(output_dir)}")
 
 
+def target_run_id(dataset_name: str, target_type: str, output_dir: str | Path) -> str:
+    return stable_hash(f"target:{dataset_name}:{target_type}:{_normalize_path(output_dir)}")
+
+
 def sync_phase1_manifest(db_path: str | Path, manifest_path: str | Path) -> dict[str, Any]:
     payload = read_json(manifest_path)
     registry = PlatformRegistry(db_path)
@@ -210,7 +214,13 @@ def sync_phase2_manifest(db_path: str | Path, manifest_path: str | Path) -> dict
         registry.close()
 
 
-def sync_target_manifest(db_path: str | Path, manifest_path: str | Path) -> dict[str, Any]:
+def sync_target_manifest(
+    db_path: str | Path,
+    manifest_path: str | Path,
+    *,
+    run_id_override: str = "",
+    payload_overrides: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     payload = read_json(manifest_path)
     registry = PlatformRegistry(db_path)
     try:
@@ -225,9 +235,17 @@ def sync_target_manifest(db_path: str | Path, manifest_path: str | Path) -> dict
             generated_at=payload["generated_at"],
             payload=payload,
         )
-        run_id = stable_hash(f"target-run:{payload['target_type']}:{payload['dataset_name']}:{payload['output_dir']}")
+        run_id = run_id_override or target_run_id(payload["dataset_name"], payload["target_type"], payload["output_dir"])
         row = registry.conn.execute("SELECT run_id FROM runs WHERE run_id = ?", (run_id,)).fetchone()
-        run_payload = {"manifest": payload, "target_spec": payload.get("target_spec", {})}
+        run_payload = {
+            "manifest": payload,
+            "target_spec": payload.get("target_spec", {}),
+            "config": payload.get("config", {}),
+            "retry_parent_run_id": "",
+            "retry_index": 0,
+        }
+        if payload_overrides:
+            run_payload.update(payload_overrides)
         if row is None:
             registry.register_run(
                 run_id=run_id,

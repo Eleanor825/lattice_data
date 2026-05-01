@@ -160,6 +160,24 @@ class PlatformApiTest(unittest.TestCase):
             self.assertEqual(datasets.status_code, 200)
             self.assertTrue(any(item["phase"] == "target" for item in datasets.json()))
 
+            target_runs = [run for run in runs.json() if run["phase"] == "target"]
+            self.assertGreaterEqual(len(target_runs), 1)
+            target_run_id = target_runs[0]["run_id"]
+
+            rerun = client.post(f"/runs/{target_run_id}/rerun")
+            self.assertEqual(rerun.status_code, 200)
+            rerun_id = rerun.json()["run_id"]
+
+            for _ in range(20):
+                rerun_row = client.get(f"/runs/{rerun_id}").json()
+                if rerun_row["status"] == "completed":
+                    break
+                time.sleep(0.2)
+
+            rerun_row = client.get(f"/runs/{rerun_id}").json()
+            self.assertEqual(rerun_row["status"], "completed")
+            self.assertEqual(rerun_row["payload"]["retry_parent_run_id"], target_run_id)
+
 
 if __name__ == "__main__":
     unittest.main()
