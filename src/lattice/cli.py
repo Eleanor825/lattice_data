@@ -7,14 +7,11 @@ from pathlib import Path
 
 from lattice.compiler import CompilerConfig, compile_dataset
 from lattice.engines import EngineConfig, engine_check, run_engine_compile
-from lattice.phase2 import Phase2Config, run_phase2_pipeline
 from lattice.platform import run_workflow_spec, workflow_spec_from_dict
-from lattice.platform.jobs import rerun_job
-from lattice.platform.server import create_app
 from lattice.reports import build_phase1_quality_report
 from lattice.platform.sync import sync_phase1_manifest, sync_phase2_manifest
 from lattice.sources import DemoFetchConfig, SourceFetchConfig, run_demo_fetch, run_source_fetch
-from lattice.training import TrainingConfig, run_training_workflow
+from lattice.targets import BuildTargetConfig, build_target
 from lattice.utils import read_json
 from lattice.workflows import Phase1Config, run_phase1_pipeline
 
@@ -166,6 +163,21 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     phase1_report_parser.add_argument("--manifest", required=True, help="Path to phase1_manifest.json")
     phase1_report_parser.add_argument("--registry", default="configs/source_registry.json")
+
+    target_parser = subparsers.add_parser(
+        "build-target",
+        help="Build a target-specific dataset asset from a target spec.",
+    )
+    target_parser.add_argument("--input", required=True, help="Input directory containing raw sources.")
+    target_parser.add_argument("--output", required=True, help="Output directory for target artifacts.")
+    target_parser.add_argument("--target-spec", required=True, help="Path to target spec YAML or JSON.")
+    target_parser.add_argument("--dataset-name", default="", help="Optional dataset name override.")
+    target_parser.add_argument(
+        "--source",
+        action="append",
+        default=[],
+        help="Optional source labels used for plan metadata. Can be repeated.",
+    )
 
     for workflow_name in ("train-pretrain", "train-continue", "train-finetune", "train-post"):
         train_parser = subparsers.add_parser(workflow_name, help=f"Run the {workflow_name.replace('train-', '')} workflow.")
@@ -369,7 +381,23 @@ def _handle_phase1_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _handle_build_target(args: argparse.Namespace) -> int:
+    manifest = build_target(
+        BuildTargetConfig(
+            input_dir=args.input,
+            output_dir=args.output,
+            target_spec_path=args.target_spec,
+            source_names=args.source,
+            dataset_name=args.dataset_name,
+        )
+    )
+    print(json.dumps(manifest, indent=2, ensure_ascii=False))
+    return 0
+
+
 def _handle_training_workflow(args: argparse.Namespace, workflow: str) -> int:
+    from lattice.training import TrainingConfig, run_training_workflow
+
     result = run_training_workflow(
         TrainingConfig(
             workflow=workflow,
@@ -389,6 +417,8 @@ def _handle_training_workflow(args: argparse.Namespace, workflow: str) -> int:
 
 
 def _handle_phase2_run(args: argparse.Namespace) -> int:
+    from lattice.phase2 import Phase2Config, run_phase2_pipeline
+
     manifest = run_phase2_pipeline(
         Phase2Config(
             workflow=args.workflow,
@@ -418,6 +448,8 @@ def _handle_phase2_run(args: argparse.Namespace) -> int:
 
 
 def _handle_phase2_migrate(args: argparse.Namespace) -> int:
+    from lattice.phase2 import Phase2Config, run_phase2_pipeline
+
     source_manifest = read_json(args.manifest)
     source_config = source_manifest["config"]
     run_name = args.run_name or f"{source_manifest['run_name']}-{args.engine}"
@@ -476,6 +508,8 @@ def _handle_run_spec(args: argparse.Namespace) -> int:
 
 
 def _handle_run_rerun(args: argparse.Namespace) -> int:
+    from lattice.platform.jobs import rerun_job
+
     payload = rerun_job(args.db, args.run_id)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
@@ -509,6 +543,7 @@ def _handle_registry_list(args: argparse.Namespace) -> int:
 
 def _handle_serve_platform(args: argparse.Namespace) -> int:
     import uvicorn
+    from lattice.platform.server import create_app
 
     app = create_app(args.db)
     uvicorn.run(app, host=args.host, port=args.port)
@@ -568,6 +603,8 @@ def main(argv: list[str] | None = None) -> int:
         return _handle_phase1_open_run(args)
     if args.command == "phase1-report":
         return _handle_phase1_report(args)
+    if args.command == "build-target":
+        return _handle_build_target(args)
     if args.command == "train-pretrain":
         return _handle_training_workflow(args, "pretrain")
     if args.command == "train-continue":
