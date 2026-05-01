@@ -451,6 +451,11 @@ def register_default_transforms() -> dict[str, Transform]:
     return {transform.name: transform for transform in transforms}
 
 
+def register_transform(registry: dict[str, Transform], transform: Transform) -> dict[str, Transform]:
+    registry[transform.name] = transform
+    return registry
+
+
 def _with_score_breakdown(*, score_name: str, breakdown: dict[str, float], extra: dict[str, object] | None = None) -> dict[str, object]:
     payload: dict[str, object] = {
         score_name: breakdown["score"],

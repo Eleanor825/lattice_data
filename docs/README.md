@@ -11,6 +11,7 @@ This folder contains the detailed material that has been moved out of the GitHub
 - [Target Compiler Technical Spec](./target-compiler-technical-spec.md)
 - [Target Compiler Validation Plan](./target-compiler-validation-plan.md)
 - [Target Compiler Quickstart](./target-compiler-quickstart.md)
+- [Target Compiler Extension Guide](./target-compiler-extension-guide.md)
 - [Training workflows](./training.md)
 - [Engine runtime notes](./engines.md)
 - [Storage architecture](./storage_architecture.md)
