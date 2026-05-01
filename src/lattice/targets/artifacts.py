@@ -18,3 +18,18 @@ class Artifact:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(slots=True)
+class EntityBundle:
+    entity_id: str
+    canonical_name: str
+    aliases: list[str] = field(default_factory=list)
+    record_ids: list[str] = field(default_factory=list)
+    source_ids: list[str] = field(default_factory=list)
+    evidence: list[dict[str, Any]] = field(default_factory=list)
+    properties: list[dict[str, Any]] = field(default_factory=list)
+    conflicts: list[dict[str, Any]] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)

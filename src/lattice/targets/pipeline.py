@@ -10,6 +10,7 @@ from lattice.ingest import ingest_directory
 from lattice.models import Record
 from lattice.sources.common import timestamp_now
 from lattice.targets.artifacts import Artifact
+from lattice.targets.fusion import build_entity_bundles
 from lattice.targets.planner import build_compilation_plan
 from lattice.targets.specs import TargetSpec, load_target_spec
 from lattice.targets.transforms import build_base_artifacts, register_default_transforms
@@ -151,6 +152,7 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
     entity_artifacts: list[Artifact] = []
     if "record_to_entity" in plan.transforms:
         entity_artifacts = transforms["record_to_entity"].run(base_artifacts, spec)
+    entity_bundles = build_entity_bundles(base_artifacts, entity_artifacts)
 
     output_counts: dict[str, int] = {}
     if spec.target_type == "rag_corpus":
@@ -191,6 +193,8 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
         "target_spec": spec.to_dict(),
         "plan": plan.to_dict(),
         "artifact_summary": dict(Counter(artifact.artifact_type for artifact in base_artifacts + entity_artifacts)),
+        "entity_bundle_count": len(entity_bundles),
+        "entity_conflict_count": sum(len(bundle.conflicts) for bundle in entity_bundles),
         "sources": list(config.source_names),
         "raw_record_count": len(raw_records),
         "kept_record_count": len(policy_kept_records),
