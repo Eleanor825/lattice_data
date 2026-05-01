@@ -17,6 +17,16 @@ class AdditionalSourceTest(unittest.TestCase):
         self.assertEqual(rows[0]["schema_type"], "Document")
         self.assertEqual(rows[0]["source_type"], "crossref")
 
+    def test_openalex_fetch_returns_documents(self) -> None:
+        from lattice.sources.openalex import fetch_openalex_documents
+
+        rows = fetch_openalex_documents("solid state battery electrolyte", limit=1, domain="materials")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["schema_type"], "Document")
+        self.assertEqual(rows[0]["source_type"], "openalex")
+        self.assertTrue(rows[0]["payload"]["title"])
+        self.assertTrue(rows[0]["payload"]["text"])
+
     def test_wikidata_fetch_returns_knowledge(self) -> None:
         rows = fetch_wikidata_knowledge(["lithium iron phosphate"], limit=1, domain="materials")
         self.assertEqual(len(rows), 1)

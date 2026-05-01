@@ -25,7 +25,7 @@ def fetch_openalex_documents(query: str, limit: int, domain: str) -> list[dict[s
     for work in payload.get("results", []):
         abstract = reconstruct_abstract(work.get("abstract_inverted_index"))
         title = (work.get("title") or "").strip()
-        if not title or not abstract:
+        if not title:
             continue
         source_id = f"openalex-{slugify(work.get('id', title).split('/')[-1])}"
         authors = [
@@ -43,6 +43,19 @@ def fetch_openalex_documents(query: str, limit: int, domain: str) -> list[dict[s
         doi = work.get("doi") or ""
         if doi:
             body_parts.append(f"DOI: {doi}")
+        if not abstract:
+            primary_location = work.get("primary_location", {}) or {}
+            source = primary_location.get("source", {}) or {}
+            venue = source.get("display_name", "")
+            if venue:
+                body_parts.append(f"Venue: {venue}")
+            concepts = [
+                concept.get("display_name", "")
+                for concept in work.get("concepts", [])
+                if concept.get("display_name")
+            ]
+            if concepts:
+                body_parts.append("Concepts: " + ", ".join(concepts[:8]))
         rows.append(
             {
                 "schema_type": "Document",
@@ -64,4 +77,3 @@ def fetch_openalex_documents(query: str, limit: int, domain: str) -> list[dict[s
             }
         )
     return rows
-
