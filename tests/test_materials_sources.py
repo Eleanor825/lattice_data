@@ -19,6 +19,7 @@ class MaterialsSourceTest(unittest.TestCase):
         self.assertEqual(rows[0]["schema_type"], "StructuredRecord")
         self.assertEqual(rows[0]["source_type"], "oqmd")
         self.assertIn("chemical_formula_reduced", rows[0]["payload"]["fields"])
+        self.assertIn("band_gap", rows[0]["payload"]["fields"])
 
     def test_nomad_fetch_returns_structured_records(self) -> None:
         rows = fetch_nomad_materials(["Li", "O"], limit=1, domain="materials")
