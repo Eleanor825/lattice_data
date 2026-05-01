@@ -72,6 +72,7 @@ class AdditionalSourceTest(unittest.TestCase):
         self.assertGreaterEqual(len(rows), 1)
         self.assertEqual(rows[0]["schema_type"], "Document")
         self.assertEqual(rows[0]["source_type"], "materials_cloud_archive")
+        self.assertGreaterEqual(len(rows[0]["payload"]["text"].split()), 20)
 
     def test_webdoc_fetch_returns_document(self) -> None:
         rows = fetch_page_document(
