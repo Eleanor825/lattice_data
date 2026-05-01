@@ -45,6 +45,16 @@ class AdditionalSourceTest(unittest.TestCase):
         self.assertEqual(rows[0]["schema_type"], "Document")
         self.assertEqual(rows[0]["source_type"], "europe_pmc")
 
+    def test_arxiv_fetch_returns_documents(self) -> None:
+        from lattice.sources.arxiv import fetch_arxiv_documents
+
+        rows = fetch_arxiv_documents("solid state battery electrolyte", limit=1, domain="materials")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["schema_type"], "Document")
+        self.assertEqual(rows[0]["source_type"], "arxiv")
+        self.assertTrue(rows[0]["payload"]["title"])
+        self.assertTrue(rows[0]["payload"]["text"])
+
     def test_materials_cloud_fetch_returns_documents(self) -> None:
         rows = fetch_materials_cloud_records("solid state battery", limit=1, domain="materials")
         self.assertGreaterEqual(len(rows), 1)
