@@ -1,9 +1,9 @@
 # Lattice Target Compiler PRD
 
-Status: Draft v0.2  
+Status: Draft v0.3  
 Owner: Product / Platform  
 Audience: Founders, engineering, research, open-source contributors  
-Last Updated: 2026-04-30
+Last Updated: 2026-05-01
 
 ## 1. Document Purpose
 
@@ -26,6 +26,11 @@ This PRD is the top-level product document for the target compiler initiative. I
 - [Target Compiler Validation Plan](./target-compiler-validation-plan.md)
 
 This PRD defines the product shape. The roadmap defines stage boundaries. The technical spec defines implementation contracts. The validation plan defines release gates.
+
+Implementation status note:
+
+- Phase 1 is complete on the current target-compiler branch.
+- Several Phase 2 foundations are already implemented in a first version.
 
 ## 2. Background
 
@@ -144,6 +149,10 @@ Phase one source priority:
 - papers: OpenAlex, Europe PMC, arXiv
 - structured materials data: PubChem, JARVIS, OQMD, NOMAD, Materials Project where available
 - optional documentation sources only after the core sources are stable
+
+Current implementation note:
+
+- The target compiler can now build from pre-existing raw fixtures or fetch selected registry-backed sources first and then compile a target dataset.
 
 ### 8.3 Target Scope
 
@@ -264,6 +273,10 @@ Allow users to specify what dataset they want, not only where data should come f
 - The compiler does not require the user to manually choose internal transforms.
 - The final manifest stores the original `TargetSpec`.
 
+Current implementation status:
+
+- Implemented.
+
 ## 10.2 FR-B: Unified Intermediate Artifact Layer
 
 ### Objective
@@ -282,6 +295,10 @@ Create a shared data layer used by all targets.
 
 - At least five target outputs are generated from shared artifacts rather than from duplicated target-only logic.
 - Artifacts can be reloaded from disk without loss of provenance.
+
+Current implementation status:
+
+- Implemented in a first version with a shared `Artifact` type and target-specific outputs.
 
 ## 10.3 FR-C: Source Connectors and Ingestion
 
@@ -308,6 +325,10 @@ Build a stable, policy-aware ingestion layer for high-value materials sources.
 
 - Default target compilation runs without relying on placeholder connectors.
 - CI coverage does not depend on external live APIs for core workflows.
+
+Current implementation status:
+
+- Partially implemented. Source-backed target builds exist, but fixture-backed coverage remains the default trust path.
 
 ## 10.4 FR-D: Entity-Centric Linking and Fusion
 
@@ -336,6 +357,10 @@ Link papers, database records, and knowledge artifacts around canonical material
 
 - A single canonical entity can trace back to multiple linked paper and DB records.
 - Property conflicts are visible in output rather than silently discarded.
+
+Current implementation status:
+
+- Partially implemented via entity bundles, evidence aggregation, and conflict counting.
 
 ## 10.5 FR-E: Transform Registry
 
@@ -370,6 +395,10 @@ Replace hardcoded fixed-output compilation with reusable typed transforms.
 - Adding a new target-specific transform does not require rewriting the full compiler.
 - At least three targets share some transform inputs or intermediate artifacts.
 
+Current implementation status:
+
+- Implemented in a first version with registry-backed transform tests.
+
 ## 10.6 FR-F: Compilation Planner
 
 ### Objective
@@ -393,6 +422,10 @@ The phase-one planner can be rule-based rather than learned. It should still beh
 
 - Different `TargetSpec` values result in different chosen plans.
 - The planner output is inspectable in logs and manifests.
+
+Current implementation status:
+
+- Implemented in a rule-based phase-1 form.
 
 ## 10.7 FR-G: Target-Aware Quality Scoring
 
@@ -421,6 +454,10 @@ Score the same artifact differently depending on downstream use.
 - At least one artifact set is ranked differently when compiled for RAG versus pretraining.
 - Score definitions are stored in code and documented.
 
+Current implementation status:
+
+- Implemented in a first version with per-target score fields and score breakdowns.
+
 ## 10.8 FR-H: Policy and License Controls
 
 ### Objective
@@ -441,6 +478,10 @@ Make data policy a product feature rather than an afterthought.
 
 - The same target can be compiled differently under two different policy presets.
 - Output manifests clearly explain source exclusions caused by policy rules.
+
+Current implementation status:
+
+- Implemented in a first version for target builds and source governance summaries.
 
 ## 10.9 FR-I: Reproducibility and Auditability
 
@@ -465,6 +506,10 @@ Every output dataset must be reproducible and inspectable.
 - A user can rerun the exact same target compilation from stored specs.
 - A user can inspect why a source or artifact was dropped.
 
+Current implementation status:
+
+- Implemented. Saved target specs, manifests, CLI registry sync, API submission, and rerun are in place.
+
 ## 10.10 FR-J: Product Surfaces
 
 ### Objective
@@ -487,6 +532,10 @@ Provide a usable product entry point for developers and early design partners.
 
 - A new user can build a target dataset from a short command plus a small spec file.
 - The result directory is understandable without reading internal code.
+
+Current implementation status:
+
+- Implemented for CLI, and partially implemented for platform API.
 
 ## 11. Target Definitions
 

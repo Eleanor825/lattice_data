@@ -21,10 +21,13 @@
 - [x] transform extension test exists
 - [x] phase-2 benchmark summary exists
 - [x] extension guide exists
+- [x] target-build API exists
+- [x] target-build rerun exists
+- [x] source-backed target-build path exists
 
 ## Remaining Before Final-State Work
 
 - [ ] planner optimization beyond rule-based selection
 - [ ] richer source governance matrix
-- [ ] target-build API submission path
+- [x] target-build API submission path
 - [ ] broader benchmark datasets

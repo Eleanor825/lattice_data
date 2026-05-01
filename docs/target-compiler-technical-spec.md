@@ -1,9 +1,9 @@
 # Lattice Target Compiler Technical Specification
 
-Status: Draft v0.1  
+Status: Draft v0.2  
 Owner: Platform Engineering  
 Audience: engineering, research engineering, maintainers  
-Last Updated: 2026-04-30
+Last Updated: 2026-05-01
 
 ## 1. Purpose
 
@@ -64,6 +64,10 @@ And usable support for:
 - `pretrain_corpus`
 - `preference_dataset`
 
+Status:
+
+- Completed on the current branch.
+
 ## 4.2 Phase 2 Technical Objective
 
 Improve the quality, trustworthiness, and extensibility of the system:
@@ -80,6 +84,10 @@ Reach a robust platform architecture capable of:
 - advanced target optimization
 - stronger data feedback loops
 - broader plugin-based growth
+
+Status:
+
+- In progress on the current branch.
 
 ## 5. Required Technical Components
 
@@ -101,6 +109,10 @@ Define a `TargetSpec` schema with:
 
 - YAML and JSON loading are both required.
 - The compiler must persist the resolved target spec into the final manifest.
+
+Implemented:
+
+- yes
 
 ### Phase 2 Requirements
 
@@ -144,6 +156,10 @@ Required artifact types in phase 1:
 - `InstructionSample`
 - `PreferencePair`
 - `EvalItem`
+
+Implemented:
+
+- yes, with first-version `Artifact` and `EntityBundle` support
 
 ### Phase 2 Requirements
 
@@ -193,6 +209,10 @@ Minimum phase 1 transforms:
 - `entity_bundle_to_eval_item`
 - `conflict_bundle_to_eval_item`
 
+Implemented:
+
+- a first registry-backed transform set exists
+
 ### Phase 2 Requirements
 
 - transform-level metrics
@@ -230,6 +250,10 @@ Planner behavior in phase 1:
 - must respect policy presets
 - must select different packaging for RAG vs pretraining vs SFT
 
+Implemented:
+
+- yes, via a rule-based planner
+
 ### Phase 2 Requirements
 
 - more nuanced source selection
@@ -254,6 +278,10 @@ Required target-aware scores:
 - `sft_fitness`
 - `preference_fitness`
 - `eval_fitness`
+
+Implemented:
+
+- yes, including breakdown fields for the current target outputs
 
 Phase 1 scoring can be heuristic, but must be target-dependent.
 
@@ -284,6 +312,10 @@ Required behaviors:
 - manifest explanation for exclusions
 - artifact-level policy state
 
+Implemented:
+
+- yes, in first-version target build policy filtering and manifest reporting
+
 ### Phase 2 Requirements
 
 - stronger source-level policy matrix
@@ -306,6 +338,10 @@ Each target build must emit:
 - quality summary
 - source coverage summary
 - plan summary
+
+Implemented:
+
+- yes
 
 Per target:
 
@@ -474,6 +510,10 @@ Suggested additions:
 - `src/lattice/artifacts.py`
 
 This exact layout can vary, but these responsibilities must exist.
+
+Current implementation note:
+
+- responsibilities now live under `src/lattice/targets/`
 
 ## 8. Stage-by-Stage Technical Roadmap
 

@@ -1,9 +1,9 @@
 # Lattice Target Compiler Roadmap
 
-Status: Draft v0.1  
+Status: Draft v0.2  
 Owner: Product / Platform  
 Audience: Founders, engineering, research, open-source contributors  
-Last Updated: 2026-04-30
+Last Updated: 2026-05-01
 
 ## 1. Purpose
 
@@ -78,6 +78,20 @@ And usable, lower-maturity support for:
 
 Given papers and structured materials records, Lattice can compile target-specific dataset assets with provenance, policy metadata, and reproducible manifests.
 
+### Phase 1 Status
+
+Completed on the current branch.
+
+Implemented in practice:
+
+- `build-target` CLI
+- target specs for all five target families
+- target-specific outputs and manifests
+- target quickstart and benchmark command
+- policy presets and source governance summary
+- registry sync and rerun support for target builds
+- source-backed target builds via source fetchers
+
 ## 4.2 Phase 2 Summary
 
 Goal:
@@ -91,6 +105,19 @@ Focus areas:
 - broader source governance
 - target-aware optimization
 - stronger API and workflow management
+
+### Phase 2 Status
+
+Started and partially implemented on the current branch.
+
+Already implemented in early form:
+
+- entity bundle and conflict summary
+- target-aware score breakdowns
+- transform extension path
+- target-build platform API
+- target-build rerun support
+- source-backed target build path
 
 ## 4.3 Final State Summary
 
@@ -106,6 +133,8 @@ Focus areas:
 - feedback loops from training and evaluation back into data compilation
 
 ## 5. Phase 1 Roadmap
+
+Phase 1 is now complete. This section remains as the closed phase definition and acceptance baseline.
 
 ## 5.1 Phase 1 Objectives
 
@@ -215,6 +244,15 @@ Phase 1 objectives:
 - external users can run the examples without live-source dependence
 - the project can be demonstrated as more than a fixed-view exporter
 
+### Phase 1 Completion Notes
+
+The current branch exceeds the initial phase-1 minimum in several places:
+
+- CLI and API target-build entry points both exist
+- target builds can sync into the platform registry
+- target builds can be rerun from stored config snapshots
+- source-registry connectors can be fetched directly into target builds
+
 ## 6. Phase 2 Roadmap
 
 ## 6.1 Phase 2 Objectives
@@ -291,6 +329,18 @@ Phase 2 objectives:
 - policy-aware build modes
 - expanded benchmark suite
 - contributor-ready plugin and source guides
+
+### Phase 2 Progress Notes
+
+The following are already in place in a first version and should now be hardened rather than invented:
+
+- entity bundle construction
+- conflict counting in manifests
+- score breakdown reporting
+- transform extension tests and guide
+- target-build API endpoint
+- target-build rerun support
+- source governance summary in manifests
 
 ### Nice to Deliver
 
@@ -375,7 +425,7 @@ The final state is not just a local compiler. It is a domain-grade data compilat
 
 ### Immediate Focus
 
-Build phase 1 to the point where one outsider can:
+Build phase 2 to the point where one outsider can:
 
 1. read the docs
 2. run a target build
@@ -391,9 +441,10 @@ Build phase 1 to the point where one outsider can:
 
 ### Prioritize
 
-- strong RAG, SFT, and eval stories
-- evidence and provenance quality
-- testability and reproducibility
+- stronger materials entity linking and conflict modeling
+- source-backed target-build reliability
+- API/platform hardening for target builds
+- benchmark quality and reporting
 
 ## 10. Release Recommendation
 

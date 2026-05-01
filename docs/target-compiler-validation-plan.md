@@ -1,9 +1,9 @@
 # Lattice Target Compiler Validation Plan
 
-Status: Draft v0.1  
+Status: Draft v0.2  
 Owner: Product / Research Engineering  
 Audience: engineering, research, maintainers, reviewers  
-Last Updated: 2026-04-30
+Last Updated: 2026-05-01
 
 ## 1. Purpose
 
@@ -111,17 +111,29 @@ Phase 1 should not release publicly as a target compiler unless all gates below 
 - one SFT workflow is demo-ready
 - one eval workflow is demo-ready
 
+Status:
+
+- satisfied on the current branch
+
 ### Gate C: Reproducibility Readiness
 
 - default demos run with offline fixtures
 - rebuild from saved spec succeeds
 - source and artifact drops are inspectable
 
+Status:
+
+- satisfied on the current branch
+
 ### Gate D: Trust Readiness
 
 - citation payloads are present for RAG outputs
 - provenance is preserved in SFT and eval outputs
 - policy mode behavior is at least minimally visible
+
+Status:
+
+- satisfied on the current branch
 
 ## 3.6 Phase 1 Deliverable Validation
 
@@ -134,6 +146,10 @@ Deliverables that must be validated:
 - `preference_dataset` example
 - target spec example library
 - benchmark summary document
+
+Status:
+
+- implemented
 
 ## 4. Phase 2 Validation Plan
 
@@ -188,13 +204,25 @@ Phase 2 should expand validation to include:
 
 - policy presets produce explainable output differences
 
+Status:
+
+- satisfied in a first version on the current branch
+
 ### Gate C: Ecosystem Improvement
 
 - at least one extension path is documented and practical
 
+Status:
+
+- satisfied in a first version on the current branch
+
 ### Gate D: Trust Improvement
 
 - conflict and evidence behavior is clearer and more inspectable than in phase 1
+
+Status:
+
+- partially satisfied; current branch reports entity bundles, conflicts, and score breakdowns
 
 ## 5. Final State Validation Direction
 
