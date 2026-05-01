@@ -211,14 +211,15 @@ def pretrain_span_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Ar
 
 
 def instruction_sample_transform(inputs: list[Artifact], spec: TargetSpec) -> list[Artifact]:
-    del spec
+    min_output_words = int(spec.target_config.get("min_output_words", spec.constraints.get("min_output_words", 8)))
     rows: list[Artifact] = []
     for artifact in inputs:
         if artifact.artifact_type == "Document":
             title = str(artifact.payload.get("title", "")).strip()
             text = str(artifact.payload.get("text", "")).strip()
             output = " ".join(text.split()[:80]).strip()
-            if not output:
+            evidence = text[:400]
+            if not output or len(output.split()) < min_output_words:
                 continue
             rows.append(
                 Artifact(
@@ -231,11 +232,14 @@ def instruction_sample_transform(inputs: list[Artifact], spec: TargetSpec) -> li
                         "instruction": f"Summarize the materials-science source '{title}' using grounded evidence.",
                         "input": title,
                         "output": output,
-                        "evidence": text[:400],
+                        "evidence": evidence,
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={"sft_fitness": _sft_fitness(output, bool(text))},
+                    quality={
+                        "sft_fitness": _sft_fitness(output, bool(evidence)),
+                        "evidence_completeness": 1.0 if evidence else 0.0,
+                    },
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
@@ -244,7 +248,8 @@ def instruction_sample_transform(inputs: list[Artifact], spec: TargetSpec) -> li
             entity = str(artifact.payload.get("entity", "")).strip()
             fields = dict(artifact.payload.get("fields", {}))
             output = "; ".join(f"{key}: {value}" for key, value in fields.items())
-            if not output:
+            evidence = str(artifact.payload.get("description", ""))
+            if not output or len(output.split()) < max(1, min_output_words // 2):
                 continue
             rows.append(
                 Artifact(
@@ -257,11 +262,14 @@ def instruction_sample_transform(inputs: list[Artifact], spec: TargetSpec) -> li
                         "instruction": f"List the known properties of {entity}.",
                         "input": entity,
                         "output": output,
-                        "evidence": artifact.payload.get("description", ""),
+                        "evidence": evidence,
                     },
                     source_refs=list(artifact.source_refs),
                     license_status=artifact.license_status,
-                    quality={"sft_fitness": _sft_fitness(output, bool(artifact.payload.get('description', '')))},
+                    quality={
+                        "sft_fitness": _sft_fitness(output, bool(evidence)),
+                        "evidence_completeness": 1.0 if evidence else 0.5,
+                    },
                     policy=dict(artifact.policy),
                     lineage=list(artifact.lineage),
                 )
