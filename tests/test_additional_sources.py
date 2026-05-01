@@ -33,6 +33,16 @@ class AdditionalSourceTest(unittest.TestCase):
         self.assertEqual(rows[0]["schema_type"], "KnowledgeRecord")
         self.assertEqual(rows[0]["source_type"], "wikidata")
 
+    def test_pubchem_fetch_returns_structured_record(self) -> None:
+        from lattice.sources.pubchem import fetch_pubchem_compounds
+
+        rows, warnings = fetch_pubchem_compounds(["lithium iron phosphate"], domain="materials")
+        self.assertEqual(warnings, [])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["schema_type"], "StructuredRecord")
+        self.assertEqual(rows[0]["source_type"], "pubchem")
+        self.assertIn("molecular_formula", rows[0]["payload"]["fields"])
+
     def test_jarvis_fetch_returns_structured_records(self) -> None:
         rows = fetch_jarvis_structures(["Li", "O"], limit=1, domain="materials")
         self.assertEqual(len(rows), 1)
