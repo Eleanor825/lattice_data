@@ -173,6 +173,11 @@ def _build_parser() -> argparse.ArgumentParser:
     target_parser.add_argument("--target-spec", required=True, help="Path to target spec YAML or JSON.")
     target_parser.add_argument("--dataset-name", default="", help="Optional dataset name override.")
     target_parser.add_argument(
+        "--registry",
+        default="configs/source_registry.json",
+        help="Optional source registry path used for governance metadata.",
+    )
+    target_parser.add_argument(
         "--source",
         action="append",
         default=[],
@@ -388,6 +393,7 @@ def _handle_build_target(args: argparse.Namespace) -> int:
             output_dir=args.output,
             target_spec_path=args.target_spec,
             source_names=args.source,
+            registry_path=args.registry,
             dataset_name=args.dataset_name,
         )
     )

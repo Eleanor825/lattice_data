@@ -9,6 +9,7 @@ from lattice.compiler.quality import filter_records
 from lattice.ingest import ingest_directory
 from lattice.models import Record
 from lattice.sources.common import timestamp_now
+from lattice.sources.registry import registry_source_map
 from lattice.targets.artifacts import Artifact
 from lattice.targets.fusion import build_entity_bundles
 from lattice.targets.planner import build_compilation_plan
@@ -23,6 +24,7 @@ class BuildTargetConfig:
     output_dir: str
     target_spec_path: str
     source_names: list[str]
+    registry_path: str = "configs/source_registry.json"
     dataset_name: str = ""
 
 
@@ -86,6 +88,56 @@ def _apply_policy(records: list[Record], license_policy: str) -> tuple[list[Reco
     return kept, dropped
 
 
+def _source_maturity(priority: str) -> str:
+    priority = priority.strip().upper()
+    if priority == "P0":
+        return "production_candidate"
+    if priority == "P1":
+        return "experimental"
+    return "unknown"
+
+
+def _build_source_governance(
+    source_names: list[str],
+    *,
+    registry_path: str,
+    license_policy: str,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    registry = registry_source_map(registry_path)
+    rows: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    for source_name in source_names:
+        payload = registry.get(source_name)
+        if payload is None:
+            warnings.append(f"Unknown source in governance registry: {source_name}")
+            rows.append(
+                {
+                    "name": source_name,
+                    "maturity": "unknown",
+                    "license_status": "unknown",
+                    "policy_compatible": False,
+                }
+            )
+            continue
+        license_status = str(payload.get("license_status", "unknown"))
+        compatible = True
+        if license_policy == "exclude_unknown_license" and license_status.strip().lower() == "unknown":
+            compatible = False
+        if license_policy == "commercial_safe" and not _is_commercial_safe(license_status):
+            compatible = False
+        rows.append(
+            {
+                "name": source_name,
+                "category": str(payload.get("category", "")),
+                "priority": str(payload.get("priority", "")),
+                "maturity": _source_maturity(str(payload.get("priority", ""))),
+                "license_status": license_status,
+                "policy_compatible": compatible,
+            }
+        )
+    return rows, warnings
+
+
 def _artifacts_to_rows(artifacts: list[Artifact]) -> list[dict[str, Any]]:
     return [artifact.payload | _artifact_metadata_payload(artifact) for artifact in artifacts]
 
@@ -139,6 +191,11 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
     spec = load_target_spec(config.target_spec_path)
     plan = build_compilation_plan(spec, selected_sources=config.source_names)
     transforms = register_default_transforms()
+    source_governance, governance_warnings = _build_source_governance(
+        config.source_names,
+        registry_path=config.registry_path,
+        license_policy=spec.license_policy,
+    )
 
     raw_records, warnings = ingest_directory(config.input_dir, spec.domain)
     kept_records, dropped = filter_records(raw_records)
@@ -196,12 +253,13 @@ def build_target(config: BuildTargetConfig) -> dict[str, Any]:
         "entity_bundle_count": len(entity_bundles),
         "entity_conflict_count": sum(len(bundle.conflicts) for bundle in entity_bundles),
         "sources": list(config.source_names),
+        "source_governance": source_governance,
         "raw_record_count": len(raw_records),
         "kept_record_count": len(policy_kept_records),
         "dropped_records": dict(dropped + policy_dropped),
         "source_counts": _source_counts(policy_kept_records),
         "output_counts": output_counts,
-        "warnings": warnings,
+        "warnings": warnings + governance_warnings,
     }
     write_json(reports_dir / "manifest.json", manifest)
     write_json(reports_dir / "saved_target_spec.json", spec.to_dict())
